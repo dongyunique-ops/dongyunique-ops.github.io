@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pixel Pals Adventure</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body {
+    height:100%;
+    background:#14141c;
+    color:#f2f2f5;
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Segoe UI",sans-serif;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+  }
+  #topbar {
+    width:640px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 4px;
+  }
+  #topbar a {
+    color:#9a9aa8;
+    text-decoration:none;
+    font-size:0.9rem;
+  }
+  #topbar a:hover { color:#fff; }
+  #topbar h1 {
+    font-size:1.05rem;
+    letter-spacing:-0.01em;
+  }
+  canvas {
+    background:#000;
+    border-radius:10px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.5);
+    image-rendering:pixelated;
+  }
+  #hint {
+    width:640px;
+    margin-top:10px;
+    color:#6f6f80;
+    font-size:0.8rem;
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+  <div id="topbar">
+    <h1>🎮 Pixel Pals Adventure</h1>
+    <a href="../index.html">← 홈으로</a>
+  </div>
+  <canvas id="game" width="640" height="480"></canvas>
+  <div id="hint">방향키/WASD로 이동 · Space/Enter로 상호작용</div>
+
+<script>
+(function(){
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+
+  const TILE = 32;
+
+  // ---------- 오리지널 몬스터 정의 (닌텐도/포켓몬 IP와 무관한 창작 디자인) ----------
+  const MONSTERS = {
+    flare: { name: '플레임펍', color:'#ff8c42', accent:'#ffd166', desc:'작은 불꽃 여우' },
+    bubble:{ name: '버블렛',   color:'#4fb3ff', accent:'#cdeeff', desc:'통통 튀는 물방울' },
+    sprig: { name: '스프리그', color:'#6fcf6f', accent:'#c9f2a0', desc:'새싹 요정' },
+  };
+  const WILD_NAMES = ['들쥐모', '반딧부기', '이슬토끼', '돌멩돌이'];
+
+  // ---------- 맵 생성 (프로그램으로 생성 — 오타/길이 오류 방지) ----------
+  const LAB_W = 20, LAB_H = 15;
+  function buildLabMap(){
+    const g = [];
+    for(let y=0;y<LAB_H;y++){
+      const row = [];
+      for(let x=0;x<LAB_W;x++){
+        row.push((x===0||y===0||x===LAB_W-1||y===LAB_H-1) ? '#' : '.');
+      }
+      g.push(row);
+    }
+    [2,3,4, 8,9,10, 14,15,16].forEach(x => g[1][x] = 'S');
+    g[13][2]='S'; g[13][3]='S'; g[13][16]='S'; g[13][17]='S';
+    const door1 = Math.floor(LAB_W/2)-1, door2 = Math.floor(LAB_W/2);
+    g[LAB_H-1][door1] = 'D'; g[LAB_H-1][door2] = 'D';
+    return g;
+  }
+  const labMonsters = [
+    { gx:11, gy:6, type:'flare' },
+    { gx:13, gy:6, type:'bubble' },
+    { gx:15, gy:6, type:'sprig' },
+  ];
+
+  const FIELD_W = 24, FIELD_H = 18;
+  function buildFieldMap(){
+    const g = [];
+    for(let y=0;y<FIELD_H;y++){
+      const row = [];
+      for(let x=0;x<FIELD_W;x++){
+        row.push((x===0||y===0||x===FIELD_W-1||y===FIELD_H-1) ? '#' : '.');
+      }
+      g.push(row);
+    }
+    for(let y=3;y<6;y++) for(let x=3;x<7;x++) g[y][x] = '~';
+    for(let y=9;y<13;y++) for(let x=14;x<20;x++) g[y][x] = ',';
+    [[5,10],[6,15],[10,5],[12,8],[15,3],[3,14]].forEach(([tx,ty]) => g[ty][tx] = '#');
+    const e1 = Math.floor(FIELD_W/2)-1, e2 = Math.floor(FIELD_W/2);
+    g[0][e1] = 'E'; g[0][e2] = 'E';
+    return g;
+  }
+
+  const SOLID = new Set(['#','S']);
+
+  let map = { grid: buildLabMap(), w: LAB_W, h: LAB_H, id:'lab' };
+
+  // ---------- 상태 ----------
+  const STATE = { TITLE:0, PLAY:1, ENCOUNTER:2 };
+  let state = STATE.TITLE;
+  let chosenStarter = null;
+  let banner = { text:'', t:0 };
+  let encounterName = '';
+
+  const player = { x: 9*TILE, y: 10*TILE, w:24, h:26, speed:150, facing:'down', moving:false };
+  let camX = 0, camY = 0;
+
+  function tileAt(grid, gx, gy){
+    if(gy<0||gy>=grid.length||gx<0||gx>=grid[0].length) return '#';
+    return grid[gy][gx];
+  }
+
+  function isSolidCell(grid, gx, gy, monsters){
+    const t = tileAt(grid, gx, gy);
+    if(SOLID.has(t)) return true;
+    if(monsters){
+      for(const m of monsters){
+        if(m.gx===gx && m.gy===gy) return true;
+      }
+    }
+    return false;
+  }
+
+  function collides(nx, ny){
+    const grid = map.grid;
+    const monsters = map.id==='lab' ? labMonsters : null;
+    const left = nx + 4, right = nx + player.w - 4;
+    const top = ny + 6, bottom = ny + player.h;
+    const corners = [[left,top],[right,top],[left,bottom],[right,bottom]];
+    for(const [cx,cy] of corners){
+      const gx = Math.floor(cx / TILE), gy = Math.floor(cy / TILE);
+      if(isSolidCell(grid, gx, gy, monsters)) return true;
+    }
+    return false;
+  }
+
+  function showBanner(text, dur){
+    banner.text = text;
+    banner.t = dur || 2200;
+  }
+
+  function frontTile(){
+    let gx = Math.floor((player.x + player.w/2) / TILE);
+    let gy = Math.floor((player.y + player.h/2) / TILE);
+    if(player.facing==='up') gy -= 1;
+    if(player.facing==='down') gy += 1;
+    if(player.facing==='left') gx -= 1;
+    if(player.facing==='right') gx += 1;
+    return { gx, gy };
+  }
+
+  function tryInteract(){
+    const { gx, gy } = frontTile();
+    if(map.id==='lab'){
+      const hit = labMonsters.find(m => m.gx===gx && m.gy===gy);
+      if(hit && !chosenStarter){
+        chosenStarter = hit.type;
+        showBanner(`${MONSTERS[hit.type].name}(을)를 선택했다! 아래 문으로 나가보세요.`, 3200);
+      } else if(hit && chosenStarter){
+        showBanner(`이미 ${MONSTERS[chosenStarter].name}(을)를 선택했어요.`, 1800);
+      }
+    }
+  }
+
+  function enterTile(gx, gy){
+    const t = tileAt(map.grid, gx, gy);
+    if(t==='D' && map.id==='lab'){
+      map = { grid: buildFieldMap(), w: FIELD_W, h: FIELD_H, id:'field' };
+      player.x = (Math.floor(FIELD_W/2)-1)*TILE;
+      player.y = 2*TILE;
+      showBanner('초원에 도착했어요. 풀숲(진한 초록)에 들어가면 몬스터를 만날 수도 있어요!', 3000);
+    } else if(t==='E' && map.id==='field'){
+      map = { grid: buildLabMap(), w: LAB_W, h: LAB_H, id:'lab' };
+      player.x = (Math.floor(LAB_W/2)-1)*TILE;
+      player.y = (LAB_H-3)*TILE;
+    } else if(t===',' && map.id==='field'){
+      if(Math.random() < 0.10){
+        encounterName = WILD_NAMES[Math.floor(Math.random()*WILD_NAMES.length)];
+        state = STATE.ENCOUNTER;
+      }
+    }
+  }
+
+  // ---------- 입력 ----------
+  const keys = {};
+  window.addEventListener('keydown', (e) => {
+    keys[e.key.toLowerCase()] = true;
+    if(state === STATE.TITLE && (e.key===' '||e.key==='Enter')){
+      state = STATE.PLAY;
+      showBanner('연구실을 둘러보고, 몬스터 앞에서 Space를 눌러보세요!', 3200);
+    } else if(state === STATE.PLAY && (e.key===' '||e.key==='Enter')){
+      tryInteract();
+    } else if(state === STATE.ENCOUNTER){
+      state = STATE.PLAY;
+    }
+  });
+  window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
+
+  // ---------- 루프 ----------
+  let last = 0;
+  function loop(ts){
+    const dt = Math.min((ts - last) / 1000, 0.05) || 0;
+    last = ts;
+    if(state === STATE.PLAY) update(dt);
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  function update(dt){
+    let dx=0, dy=0;
+    if(keys['arrowup']||keys['w']){ dy=-1; player.facing='up'; }
+    else if(keys['arrowdown']||keys['s']){ dy=1; player.facing='down'; }
+    else if(keys['arrowleft']||keys['a']){ dx=-1; player.facing='left'; }
+    else if(keys['arrowright']||keys['d']){ dx=1; player.facing='right'; }
+    player.moving = !!(dx||dy);
+
+    const prevGx = Math.floor((player.x+player.w/2)/TILE);
+    const prevGy = Math.floor((player.y+player.h/2)/TILE);
+
+    if(dx){
+      const nx = player.x + dx*player.speed*dt;
+      if(!collides(nx, player.y)) player.x = nx;
+    }
+    if(dy){
+      const ny = player.y + dy*player.speed*dt;
+      if(!collides(player.x, ny)) player.y = ny;
+    }
+    player.x = Math.max(0, Math.min(player.x, map.w*TILE - player.w));
+    player.y = Math.max(0, Math.min(player.y, map.h*TILE - player.h));
+
+    const gx = Math.floor((player.x+player.w/2)/TILE);
+    const gy = Math.floor((player.y+player.h/2)/TILE);
+    if(gx!==prevGx || gy!==prevGy) enterTile(gx, gy);
+
+    const viewW = canvas.width, viewH = canvas.height;
+    camX = Math.max(0, Math.min(player.x - viewW/2, map.w*TILE - viewW));
+    camY = Math.max(0, Math.min(player.y - viewH/2, map.h*TILE - viewH));
+    if(map.w*TILE <= viewW) camX = -(viewW - map.w*TILE)/2;
+    if(map.h*TILE <= viewH) camY = -(viewH - map.h*TILE)/2;
+
+    if(banner.t > 0) banner.t -= dt*1000;
+  }
+
+  // ---------- 드로잉 ----------
+  function drawTile(t, sx, sy){
+    switch(t){
+      case '#': ctx.fillStyle = map.id==='lab' ? '#2a2a38' : '#1c3d1e'; break;
+      case '.': ctx.fillStyle = map.id==='lab' ? '#7a5a3a' : '#3f8f4a'; break;
+      case 'S': ctx.fillStyle = '#4a5568'; break;
+      case 'D': ctx.fillStyle = '#c9a24b'; break;
+      case 'E': ctx.fillStyle = '#c9a24b'; break;
+      case '~': ctx.fillStyle = '#2e86c1'; break;
+      case ',': ctx.fillStyle = '#2c6e31'; break;
+      default: ctx.fillStyle = '#000';
+    }
+    ctx.fillRect(sx, sy, TILE, TILE);
+    ctx.fillStyle = 'rgba(0,0,0,0.08)';
+    if((Math.floor(sx/TILE)+Math.floor(sy/TILE))%2===0) ctx.fillRect(sx,sy,TILE,TILE);
+    if(t==='S'){
+      ctx.fillStyle = '#8899aa';
+      ctx.fillRect(sx+4, sy+4, TILE-8, TILE-8);
+    }
+    if(t==='~'){
+      ctx.fillStyle = 'rgba(255,255,255,0.15)';
+      ctx.fillRect(sx+4, sy+14, TILE-8, 4);
+    }
+  }
+
+  function drawMap(){
+    const startCol = Math.max(0, Math.floor(camX/TILE));
+    const endCol = Math.min(map.w, Math.ceil((camX+canvas.width)/TILE));
+    const startRow = Math.max(0, Math.floor(camY/TILE));
+    const endRow = Math.min(map.h, Math.ceil((camY+canvas.height)/TILE));
+    for(let gy=startRow; gy<endRow; gy++){
+      for(let gx=startCol; gx<endCol; gx++){
+        drawTile(map.grid[gy][gx], gx*TILE-camX, gy*TILE-camY);
+      }
+    }
+  }
+
+  function drawMonster(type, sx, sy, size){
+    const m = MONSTERS[type];
+    const s = size || 28;
+    ctx.save();
+    ctx.translate(sx, sy);
+    ctx.fillStyle = m.color;
+    if(type==='flare'){
+      ctx.beginPath(); ctx.ellipse(s/2, s*0.6, s*0.42, s*0.34, 0, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(s*0.2,s*0.35); ctx.lineTo(s*0.05,s*0.05); ctx.lineTo(s*0.35,s*0.22); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(s*0.8,s*0.35); ctx.lineTo(s*0.95,s*0.05); ctx.lineTo(s*0.65,s*0.22); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = m.accent;
+      ctx.beginPath(); ctx.ellipse(s/2, s*0.68, s*0.16, s*0.12, 0, 0, Math.PI*2); ctx.fill();
+    } else if(type==='bubble'){
+      ctx.beginPath(); ctx.arc(s/2, s*0.55, s*0.4, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = m.accent;
+      ctx.beginPath(); ctx.ellipse(s/2, s*0.68, s*0.2, s*0.14, 0, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = m.color;
+      ctx.beginPath(); ctx.ellipse(s*0.15, s*0.5, s*0.08, s*0.14, 0, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(s*0.85, s*0.5, s*0.08, s*0.14, 0, 0, Math.PI*2); ctx.fill();
+    } else if(type==='sprig'){
+      ctx.beginPath(); ctx.arc(s/2, s*0.6, s*0.36, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = m.accent;
+      ctx.beginPath(); ctx.moveTo(s*0.5,s*0.1); ctx.lineTo(s*0.3,s*0.32); ctx.lineTo(s*0.5,s*0.3); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(s*0.5,s*0.1); ctx.lineTo(s*0.7,s*0.32); ctx.lineTo(s*0.5,s*0.3); ctx.closePath(); ctx.fill();
+    }
+    ctx.fillStyle = '#20202a';
+    ctx.beginPath(); ctx.arc(s*0.38, s*0.55, s*0.045, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(s*0.62, s*0.55, s*0.045, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawPlayer(){
+    const sx = player.x - camX, sy = player.y - camY;
+    ctx.save();
+    ctx.translate(sx, sy);
+    ctx.fillStyle = '#274c77';
+    ctx.fillRect(4, 16, player.w-8, 10);
+    ctx.fillStyle = '#3f6ea5';
+    ctx.fillRect(2, 8, player.w-4, 12);
+    ctx.fillStyle = '#f2c29c';
+    ctx.fillRect(6, 2, player.w-12, 10);
+    ctx.fillStyle = '#3a2a1e';
+    ctx.fillRect(4, 0, player.w-8, 6);
+    ctx.fillStyle = '#20202a';
+    if(player.facing==='down'){
+      ctx.fillRect(8, 6, 2, 2); ctx.fillRect(player.w-10, 6, 2, 2);
+    } else if(player.facing==='up'){
+      ctx.fillStyle = '#3a2a1e'; ctx.fillRect(4, 2, player.w-8, 8);
+    } else if(player.facing==='left'){
+      ctx.fillRect(6, 6, 2, 2);
+    } else if(player.facing==='right'){
+      ctx.fillRect(player.w-8, 6, 2, 2);
+    }
+    ctx.restore();
+  }
+
+  function drawHUD(){
+    ctx.fillStyle = 'rgba(10,10,16,0.55)';
+    ctx.fillRect(0,0,220,52);
+    ctx.fillStyle = '#fff';
+    ctx.font = '14px sans-serif';
+    if(chosenStarter){
+      drawMonster(chosenStarter, 8, 8, 36);
+      ctx.fillText(MONSTERS[chosenStarter].name + '와 함께 탐험 중', 52, 30);
+    } else {
+      ctx.fillText('아직 파트너를 고르지 않았어요', 10, 30);
+    }
+
+    if(banner.t > 0){
+      ctx.fillStyle = 'rgba(10,10,16,0.75)';
+      ctx.fillRect(0, canvas.height-46, canvas.width, 46);
+      ctx.fillStyle = '#fff';
+      ctx.font = '15px sans-serif';
+      ctx.fillText(banner.text, 16, canvas.height-18);
+    }
+  }
+
+  function drawTitle(){
+    ctx.fillStyle = '#0e0e16';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 40px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('PIXEL PALS ADVENTURE', canvas.width/2, canvas.height/2 - 40);
+    ctx.font = '16px sans-serif';
+    ctx.fillStyle = '#9a9aa8';
+    ctx.fillText('오리지널 몬스터와 함께하는 작은 모험', canvas.width/2, canvas.height/2);
+    const blink = Math.floor(Date.now()/500)%2===0;
+    if(blink){
+      ctx.fillStyle = '#ffd166';
+      ctx.font = 'bold 18px sans-serif';
+      ctx.fillText('Press SPACE / ENTER to start', canvas.width/2, canvas.height/2 + 50);
+    }
+    ctx.textAlign = 'left';
+    drawMonster('flare', canvas.width/2-140, canvas.height/2+90, 56);
+    drawMonster('bubble', canvas.width/2-28, canvas.height/2+90, 56);
+    drawMonster('sprig', canvas.width/2+84, canvas.height/2+90, 56);
+  }
+
+  function drawEncounter(){
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#1c1c26';
+    ctx.fillRect(canvas.width/2-180, canvas.height/2-90, 360, 180);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 18px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('야생의 ' + encounterName + '(이)가 나타났다!', canvas.width/2, canvas.height/2-30);
+    ctx.font = '14px sans-serif';
+    ctx.fillStyle = '#9a9aa8';
+    ctx.fillText('아무 키나 눌러 계속하기', canvas.width/2, canvas.height/2+20);
+    ctx.textAlign = 'left';
+  }
+
+  function drawStarterLabels(){
+    if(map.id!=='lab') return;
+    ctx.font = '11px sans-serif';
+    ctx.fillStyle = '#fff';
+    labMonsters.forEach(m => {
+      const sx = m.gx*TILE - camX, sy = m.gy*TILE - camY;
+      drawMonster(m.type, sx, sy-6, TILE);
+      if(chosenStarter===m.type){
+        ctx.fillStyle = '#ffd166';
+        ctx.fillText('✓ 선택됨', sx-4, sy+TILE+12);
+        ctx.fillStyle = '#fff';
+      }
+    });
+  }
+
+  function draw(){
+    if(state === STATE.TITLE){ drawTitle(); return; }
+    drawMap();
+    drawStarterLabels();
+    drawPlayer();
+    drawHUD();
+    if(state === STATE.ENCOUNTER) drawEncounter();
+  }
+
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
