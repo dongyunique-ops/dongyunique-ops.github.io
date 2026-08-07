@@ -187,7 +187,9 @@
                     <h3>엘로라 인 가든</h3>
                     <p class="loc-addr">서울특별시 송파구 충민로 52 가든파이브웍스 1층</p>
                 </div>
-                <div class="loc-map" id="kakaoMap"></div>
+                <div class="loc-map">
+                    <iframe src="https://maps.google.com/maps?q=서울+송파구+충민로+52+가든파이브웍스&t=&z=16&ie=UTF8&iwloc=&output=embed" width="100%" height="220" style="border:0;border-radius:10px;" allowfullscreen="" loading="lazy"></iframe>
+                </div>
                 <div class="loc-map-btns">
                     <a href="https://map.kakao.com/link/to/엘로라인가든,37.4771,127.1237" target="_blank" class="loc-btn">
                         <span class="loc-btn-icon">&#128205;</span>카카오맵
@@ -689,7 +691,6 @@
     </style>
 
     <!-- 카카오맵 -->
-    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=1b9581fd4ebc38cc9eeffb3f74e88047&autoload=false"></script>
     <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js"></script>
     <script>
         // 오프닝 → 본문
@@ -708,26 +709,6 @@
             document.getElementById('seconds').textContent = String(Math.floor((d%(1000*60))/1000)).padStart(2,'0');
         }
         updateCD(); setInterval(updateCD, 1000);
-
-        // 카카오맵
-        function initMap() {
-            if (typeof kakao !== 'undefined' && kakao.maps) {
-                kakao.maps.load(function() {
-                    var container = document.getElementById('kakaoMap');
-                    if (!container) return;
-                    var map = new kakao.maps.Map(container, {
-                        center: new kakao.maps.LatLng(37.4771, 127.1237), level: 3
-                    });
-                    var marker = new kakao.maps.Marker({ position: new kakao.maps.LatLng(37.4771, 127.1237) });
-                    marker.setMap(map);
-                    new kakao.maps.InfoWindow({ content: '<div style="padding:5px;font-size:11px;text-align:center;white-space:nowrap;">엘로라 인 가든</div>' }).open(map, marker);
-                });
-            } else {
-                var container = document.getElementById('kakaoMap');
-                if (container) container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;"><span style="font-size:2rem;">&#128205;</span><p style="font-size:0.8rem;color:#8c8c8c;margin-top:0.5rem;">엘로라 인 가든</p><p style="font-size:0.7rem;color:#bbb;">서울 송파구 충민로 52</p></div>';
-            }
-        }
-        window.addEventListener('load', function() { setTimeout(initMap, 500); });
 
         // 스크롤 애니메이션
         const obs = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); }), {threshold:0.12});
