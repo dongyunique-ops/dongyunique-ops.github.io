@@ -35,3 +35,13 @@ hint: the same ref. If you want to integrate the remote changes, use
 hint: 'git pull' before pushing again.
 hint: See the 'Note about fast-forwards' in 'git push --help' for details.
 [2026-08-07 10:56:23] push 실패 - 네트워크 등 확인 필요
+[main 8d88c63] auto: 2026-08-07 10:56:38
+ 1 file changed, 11 insertions(+)
+To github.com:dongyunique-ops/dongyunique-ops.github.io.git
+ ! [rejected]        main -> main (non-fast-forward)
+error: failed to push some refs to 'github.com:dongyunique-ops/dongyunique-ops.github.io.git'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. If you want to integrate the remote changes,
+hint: use 'git pull' before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+[2026-08-07 10:56:41] push 실패 - 네트워크 등 확인 필요
