@@ -689,7 +689,8 @@
     </style>
 
     <!-- 카카오맵 -->
-    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=KAKAO_APP_KEY&autoload=false"></script>
+    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=1b9581fd4ebc38cc9eeffb3f74e88047&autoload=false"></script>
+    <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js"></script>
     <script>
         // 오프닝 → 본문
         setTimeout(() => {
@@ -744,7 +745,27 @@
         function copyLink() {
             navigator.clipboard.writeText(window.location.href).then(()=>showToast('링크가 복사되었습니다'));
         }
-        function shareKakao() { showToast('카카오톡 공유는 앱키 등록 후 사용 가능합니다'); }
+        // 카카오 초기화
+        if (window.Kakao && !Kakao.isInitialized()) {
+            Kakao.init('1b9581fd4ebc38cc9eeffb3f74e88047');
+        }
+
+        function shareKakao() {
+            if (!Kakao.isInitialized()) { showToast('카카오 SDK 로딩 중입니다'); return; }
+            Kakao.Share.sendDefault({
+                objectType: 'feed',
+                content: {
+                    title: '동윤 ♥ 희은 결혼합니다',
+                    description: '2026년 12월 12일 토요일 오후 2시\n엘로라 인 가든',
+                    imageUrl: '',
+                    link: { mobileWebUrl: window.location.href, webUrl: window.location.href }
+                },
+                buttons: [{
+                    title: '청첩장 보기',
+                    link: { mobileWebUrl: window.location.href, webUrl: window.location.href }
+                }]
+            });
+        }
         function shareFacebook() { window.open('https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(window.location.href), '_blank'); }
 
         function showToast(msg) {
