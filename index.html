@@ -13,36 +13,119 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             min-height: 100vh;
+            background: #f8f9fa;
+            color: #333;
+        }
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 260px;
+            background: #1a1a2e;
+            color: #fff;
+            padding: 2rem 1.5rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        .sidebar h2 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.7;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
+        .sidebar h1 {
+            font-size: 1.4rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .sidebar nav ul {
+            list-style: none;
+        }
+        .sidebar nav ul li {
+            margin-bottom: 0.5rem;
+        }
+        .sidebar nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.7rem 1rem;
+            border-radius: 8px;
+            transition: background 0.2s;
+            font-size: 0.95rem;
+        }
+        .sidebar nav ul li a:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .main {
+            margin-left: 260px;
+            flex: 1;
+            padding: 3rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #fff;
         }
-        .container {
+        .welcome {
             text-align: center;
-            padding: 2rem;
+            max-width: 500px;
         }
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-        p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-        .emoji {
+        .welcome .emoji {
             font-size: 4rem;
             margin-bottom: 1rem;
+        }
+        .welcome h1 {
+            font-size: 2rem;
+            margin-bottom: 0.8rem;
+            color: #1a1a2e;
+        }
+        .welcome p {
+            font-size: 1.1rem;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+                padding: 1.5rem;
+            }
+            .layout {
+                flex-direction: column;
+            }
+            .main {
+                margin-left: 0;
+                padding: 2rem 1.5rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="emoji">&#128075;</div>
-        <h1>안녕하세요!</h1>
-        <p>dongyunique-ops의 첫 번째 웹페이지입니다.</p>
-        <p>곧 멋진 콘텐츠로 채워질 예정이에요.</p>
+    <div class="layout">
+        <aside class="sidebar">
+            <h2>PROJECTS</h2>
+            <h1>dongyunique-ops</h1>
+            <nav>
+                <ul>
+                    <li><a href="/wedding/">&#128141; 모바일청첩장프로젝트</a></li>
+                </ul>
+            </nav>
+        </aside>
+        <main class="main">
+            <div class="welcome">
+                <div class="emoji">&#128075;</div>
+                <h1>안녕하세요!</h1>
+                <p>왼쪽 목록에서 프로젝트를 선택하면<br>각 프로젝트 페이지로 이동합니다.</p>
+            </div>
+        </main>
     </div>
 </body>
 </html>
