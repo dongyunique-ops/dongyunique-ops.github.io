@@ -10,3 +10,4 @@ config.local.*
 # 시스템/도구 파일
 .DS_Store
 node_modules/
+.deploy/watch.log
