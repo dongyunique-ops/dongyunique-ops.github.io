@@ -87,6 +87,8 @@ section {
     position: absolute;
     inset: 0;
     background: url('cover.jpg') center center / cover no-repeat;
+    image-rendering: auto;
+    -webkit-image-rendering: auto;
 }
 .opening-overlay {
     position: absolute;
@@ -874,45 +876,43 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         var canvas = document.getElementById('heartCanvas');
         var ctx = canvas.getContext('2d');
         var drawing = false;
-        var drawnPixels = 0;
-        var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-        var threshold = isMobile ? 200 : 600;
 
         function resizeCanvas() {
             var container = canvas.parentElement;
             canvas.width = container.clientWidth || window.innerWidth;
             canvas.height = container.clientHeight || window.innerHeight;
         }
-        
-        // 약간 딜레이 후 초기화 (DOM 렌더링 완료 대기)
         setTimeout(resizeCanvas, 100);
         window.addEventListener('resize', resizeCanvas);
 
-        function getHeartPoints() {
+        // 하트 경로를 20개 구간으로 나눔
+        var segments = 20;
+        var segmentHit = new Array(segments).fill(false);
+
+        function getHeartPoint(t) {
             var cx = canvas.width / 2;
-            var cy = canvas.height / 2 - 20;
+            var cy = canvas.height / 2 - 10;
             var scale = Math.min(canvas.width, canvas.height) * 0.005;
-            var points = [];
-            for (var t = 0; t < Math.PI * 2; t += 0.05) {
-                var x = 16 * Math.pow(Math.sin(t), 3);
-                var y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
-                points.push({ x: cx + x * scale, y: cy + y * scale });
-            }
-            return points;
+            var x = 16 * Math.pow(Math.sin(t), 3);
+            var y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+            return { x: cx + x * scale, y: cy + y * scale };
         }
 
-        var heartPoints = [];
-        setTimeout(function() { heartPoints = getHeartPoints(); }, 150);
-        window.addEventListener('resize', function() { heartPoints = getHeartPoints(); });
-
-        function isNearHeart(px, py) {
-            if (heartPoints.length === 0) return true; // 포인트 없으면 어디든 OK
-            for (var i = 0; i < heartPoints.length; i++) {
-                var dx = px - heartPoints[i].x;
-                var dy = py - heartPoints[i].y;
-                if (dx * dx + dy * dy < 80 * 80) return true;
+        function checkSegment(px, py) {
+            var hitDist = 55;
+            for (var i = 0; i < segments; i++) {
+                if (segmentHit[i]) continue;
+                var t = (i / segments) * Math.PI * 2;
+                var pt = getHeartPoint(t);
+                var dx = px - pt.x;
+                var dy = py - pt.y;
+                if (dx * dx + dy * dy < hitDist * hitDist) {
+                    segmentHit[i] = true;
+                }
             }
-            return false;
+            // 몇 퍼센트 완주했는지 확인
+            var hitCount = segmentHit.filter(function(h) { return h; }).length;
+            return hitCount / segments;
         }
 
         function getPos(e) {
@@ -938,7 +938,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
             e.preventDefault();
             e.stopPropagation();
             var pos = getPos(e);
-            
+
             if (lastPos) {
                 ctx.lineWidth = 4;
                 ctx.lineCap = 'round';
@@ -950,9 +950,9 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                 ctx.stroke();
             }
             lastPos = pos;
-            drawnPixels += 8;
 
-            if (drawnPixels > threshold) {
+            var progress = checkSegment(pos.x, pos.y);
+            if (progress >= 0.7) {
                 drawing = false;
                 startWedding();
             }
