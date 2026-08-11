@@ -98,6 +98,7 @@ section {
     flex-direction: column;
     align-items: center;
     gap: 12px;
+    z-index: 2;
 }
 .opening-text p {
     opacity: 0;
@@ -115,6 +116,28 @@ section {
     color: rgba(255,255,255,0.7);
     margin-top: 30px;
     animation: fadeUp 0.8s ease 2.5s forwards, pulse 2s ease-in-out 3.3s infinite;
+}
+.opening-heart-svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 220px;
+    height: 200px;
+    z-index: 1;
+    pointer-events: none;
+}
+.opening-heart-svg path {
+    fill: none;
+    stroke: rgba(255,255,255,0.5);
+    stroke-width: 2;
+    stroke-dasharray: 8 6;
+}
+.opening-canvas {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    touch-action: none;
 }
 @keyframes pulse {
     0%, 100% { opacity: 0.6; }
@@ -533,25 +556,29 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
     <div class="opening" id="opening">
         <div class="opening-bg-img"></div>
         <div class="opening-overlay"></div>
+        <!-- Heart outline SVG -->
+        <svg class="opening-heart-svg" viewBox="0 0 200 180">
+            <path d="M100,170 C40,120 0,80 0,50 C0,20 20,0 50,0 C70,0 90,15 100,35 C110,15 130,0 150,0 C180,0 200,20 200,50 C200,80 160,120 100,170 Z"/>
+        </svg>
         <div class="opening-text">
             <p class="op-line1">우리 결혼합니다</p>
             <p class="op-names">동윤 &amp; 희은</p>
             <p class="op-date">2026. 12. 12</p>
-            <p class="op-tap">화면을 터치해주세요</p>
+            <p class="op-tap">하트를 따라 그려주세요 ♥</p>
         </div>
+        <canvas class="opening-canvas" id="heartCanvas"></canvas>
     </div>
 
     <!-- 음악 컨트롤 -->
     <button class="music-btn" id="musicBtn" onclick="toggleMusic()" style="display:none;">
         <span id="musicIcon">♪</span>
     </button>
-    <audio id="bgm" style="display:none;"></audio>
 
     <!-- Back Link -->
     <a href="/" class="back-link">&#8592; 목록으로</a>
 
     <!-- Main Content -->
-    <main>
+    <main id="mainContent">
         <!-- Hero -->
         <section class="hero">
             <div class="inner fade-in">
@@ -727,20 +754,10 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                     <div class="account-card">
                         <div class="account-top">
                             <span class="account-role">신부</span>
-                            <span class="account-name">이희은</span>
+                            <span class="account-name">김희은</span>
                         </div>
                         <div class="account-bottom">
                             <span class="account-number">신한은행 000-000-000000</span>
-                            <button class="account-copy" onclick="copyText('000-000-000000')" aria-label="계좌번호 복사">📋</button>
-                        </div>
-                    </div>
-                    <div class="account-card">
-                        <div class="account-top">
-                            <span class="account-role">신부 아버지</span>
-                            <span class="account-name">김현교</span>
-                        </div>
-                        <div class="account-bottom">
-                            <span class="account-number">하나은행 000-000-000000</span>
                             <button class="account-copy" onclick="copyText('000-000-000000')" aria-label="계좌번호 복사">📋</button>
                         </div>
                     </div>
@@ -818,13 +835,8 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         Kakao.init('1b9581fd4ebc38cc9eeffb3f74e88047');
     }
 
-    // 오프닝 터치 → 음악 시작 + 본문 표시
+    // 오프닝 하트 그리기 → 음악 시작 + 본문 표시
     var musicPlaying = false;
-    var bgm = document.getElementById('bgm');
-    bgm.src = 'https://dongyunique-ops.github.io/wedding/bgm.mp3';
-    bgm.loop = true;
-    bgm.volume = 0.5;
-    bgm.preload = 'auto';
     var started = false;
 
     function startWedding() {
@@ -835,7 +847,13 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         document.getElementById('mainContent').classList.add('show');
         document.getElementById('musicBtn').style.display = 'flex';
         
-        bgm.play().then(function() {
+        // Create audio fresh inside user gesture
+        var audio = new Audio();
+        audio.src = 'bgm.mp3';
+        audio.loop = true;
+        audio.volume = 0.5;
+        window.bgmAudio = audio;
+        audio.play().then(function() {
             musicPlaying = true;
             document.getElementById('musicBtn').classList.add('playing');
         }).catch(function(e) {
@@ -843,17 +861,107 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         });
     }
 
-    var openingEl = document.getElementById('opening');
-    openingEl.addEventListener('click', startWedding);
-    openingEl.addEventListener('touchstart', startWedding);
+    // Heart drawing canvas logic
+    (function() {
+        var canvas = document.getElementById('heartCanvas');
+        var ctx = canvas.getContext('2d');
+        var drawing = false;
+        var drawnPixels = 0;
+        var threshold = 0;
+
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            threshold = canvas.width * canvas.height * 0.003; // ~0.3% of canvas area as threshold
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Heart path points for proximity check (centered on screen)
+        function getHeartPoints() {
+            var cx = canvas.width / 2;
+            var cy = canvas.height / 2;
+            var scale = Math.min(canvas.width, canvas.height) * 0.0055;
+            var points = [];
+            for (var t = 0; t < Math.PI * 2; t += 0.05) {
+                var x = 16 * Math.pow(Math.sin(t), 3);
+                var y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+                points.push({ x: cx + x * scale, y: cy + y * scale - 20 });
+            }
+            return points;
+        }
+
+        var heartPoints = getHeartPoints();
+        window.addEventListener('resize', function() { heartPoints = getHeartPoints(); });
+
+        function isNearHeart(px, py) {
+            var maxDist = 50;
+            for (var i = 0; i < heartPoints.length; i++) {
+                var dx = px - heartPoints[i].x;
+                var dy = py - heartPoints[i].y;
+                if (dx * dx + dy * dy < maxDist * maxDist) return true;
+            }
+            return false;
+        }
+
+        function getPos(e) {
+            var rect = canvas.getBoundingClientRect();
+            if (e.touches && e.touches.length > 0) {
+                return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+            }
+            return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        }
+
+        function startDraw(e) {
+            if (started) return;
+            drawing = true;
+            var pos = getPos(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+            e.preventDefault();
+        }
+
+        function draw(e) {
+            if (!drawing || started) return;
+            e.preventDefault();
+            var pos = getPos(e);
+            ctx.lineWidth = 4;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = 'rgba(255, 180, 200, 0.85)';
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+
+            if (isNearHeart(pos.x, pos.y)) {
+                drawnPixels += 5;
+            }
+            if (drawnPixels > threshold) {
+                drawing = false;
+                startWedding();
+            }
+        }
+
+        function endDraw(e) {
+            drawing = false;
+        }
+
+        canvas.addEventListener('mousedown', startDraw);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', endDraw);
+        canvas.addEventListener('mouseleave', endDraw);
+        canvas.addEventListener('touchstart', startDraw, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        canvas.addEventListener('touchend', endDraw);
+    })();
 
     function toggleMusic() {
         if (musicPlaying) {
-            bgm.pause();
+            window.bgmAudio.pause();
             musicPlaying = false;
             document.getElementById('musicBtn').classList.remove('playing');
         } else {
-            bgm.play();
+            window.bgmAudio.play();
             musicPlaying = true;
             document.getElementById('musicBtn').classList.add('playing');
         }
