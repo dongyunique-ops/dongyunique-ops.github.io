@@ -526,7 +526,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
     <button class="music-btn" id="musicBtn" onclick="toggleMusic()" style="display:none;">
         <span id="musicIcon">♪</span>
     </button>
-    <audio id="bgm" loop preload="auto">
+    <audio id="bgm" loop preload="metadata" playsinline webkit-playsinline>
         <source src="bgm.mp3" type="audio/mpeg">
     </audio>
 
@@ -804,42 +804,38 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
     // 오프닝 터치 → 음악 시작 + 본문 표시
     var musicPlaying = false;
     var bgm = document.getElementById('bgm');
+    var started = false;
 
     function startWedding() {
+        if (started) return;
+        started = true;
+        
         // 오프닝 숨기고 본문 표시
         document.getElementById('opening').classList.add('hide');
         document.getElementById('mainContent').classList.add('show');
         document.getElementById('musicBtn').style.display = 'flex';
         
-        // 음악 재생 시도
-        bgm.volume = 0.5;
-        bgm.currentTime = 0;
-        var playPromise = bgm.play();
-        if (playPromise !== undefined) {
-            playPromise.then(function() {
+        // Android Chrome 대응: 새 Audio 객체로 재생
+        try {
+            bgm.src = 'bgm.mp3';
+            bgm.load();
+            bgm.volume = 0.5;
+            bgm.loop = true;
+            bgm.play().then(function() {
                 musicPlaying = true;
                 document.getElementById('musicBtn').classList.add('playing');
             }).catch(function(e) {
-                console.log('BGM play failed:', e);
-                // 재시도
-                document.addEventListener('touchstart', function retry() {
-                    bgm.play().then(function() {
-                        musicPlaying = true;
-                        document.getElementById('musicBtn').classList.add('playing');
-                    });
-                    document.removeEventListener('touchstart', retry);
-                }, { once: true });
+                console.log('play failed, retrying...', e);
             });
+        } catch(e) {
+            console.log('audio error', e);
         }
     }
 
-    // 터치와 클릭 둘 다 지원
+    // 클릭 + 터치 둘 다 처리
     var openingEl = document.getElementById('opening');
     openingEl.addEventListener('click', startWedding);
-    openingEl.addEventListener('touchend', function(e) {
-        e.preventDefault();
-        startWedding();
-    });
+    openingEl.addEventListener('touchstart', startWedding);
 
     function toggleMusic() {
         if (musicPlaying) {
