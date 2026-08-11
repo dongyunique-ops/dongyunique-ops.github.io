@@ -674,7 +674,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                 </div>
                 <div class="nav-buttons">
                     <a href="https://naver.me/xmBPxvWh" target="_blank" rel="noopener" class="nav-btn">🗺️ 네이버 지도</a>
-                    <a href="https://map.kakao.com/link/search/서울 송파구 충민로 52" target="_blank" rel="noopener" class="nav-btn">🗺️ 카카오맵</a>
+                    <a href="https://map.kakao.com/link/search/엘로라인가든 송파구 충민로 52" target="_blank" rel="noopener" class="nav-btn">🗺️ 카카오맵</a>
                 </div>
                 <div class="transport-info">
                     <p>🚇 지하철: 8호선 장지역 4번 출구 도보 4분</p>
@@ -821,7 +821,9 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
 
     // 오프닝 터치 → 음악 시작 + 본문 표시
     var musicPlaying = false;
-    var bgm = document.getElementById('bgm');
+    var bgm = new Audio('bgm.mp3');
+    bgm.loop = true;
+    bgm.volume = 0.5;
     var started = false;
 
     function startWedding() {
@@ -833,21 +835,13 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         document.getElementById('mainContent').classList.add('show');
         document.getElementById('musicBtn').style.display = 'flex';
         
-        // Android Chrome 대응: 새 Audio 객체로 재생
-        try {
-            bgm.src = 'bgm.mp3';
-            bgm.load();
-            bgm.volume = 0.5;
-            bgm.loop = true;
-            bgm.play().then(function() {
-                musicPlaying = true;
-                document.getElementById('musicBtn').classList.add('playing');
-            }).catch(function(e) {
-                console.log('play failed, retrying...', e);
-            });
-        } catch(e) {
-            console.log('audio error', e);
-        }
+        // 음악 재생
+        bgm.play().then(function() {
+            musicPlaying = true;
+            document.getElementById('musicBtn').classList.add('playing');
+        }).catch(function(e) {
+            console.log('play failed:', e);
+        });
     }
 
     // 클릭 + 터치 둘 다 처리
