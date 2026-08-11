@@ -90,6 +90,21 @@ section {
     animation: fadeUp 0.8s ease forwards;
     pointer-events: none;
 }
+.opening-photo {
+    width: 180px;
+    height: 240px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.1s forwards;
+    pointer-events: none;
+}
+.opening-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
 .opening .op-line1 { animation-delay: 0.3s; }
 .opening .op-names { animation-delay: 1.0s; font-size: 26px; letter-spacing: 2px; }
 .opening .op-date { animation-delay: 1.7s; color: #888; font-size: 13px; letter-spacing: 1px; }
@@ -516,6 +531,9 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
 <body>
     <!-- Opening Animation -->
     <div class="opening" id="opening">
+        <div class="opening-photo">
+            <img src="cover.jpg" alt="동윤 & 희은">
+        </div>
         <p class="op-line1">우리 결혼합니다</p>
         <p class="op-names">동윤 &amp; 희은</p>
         <p class="op-date">2026. 12. 12</p>
