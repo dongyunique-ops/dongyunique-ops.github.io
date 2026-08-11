@@ -88,6 +88,7 @@ section {
 .opening p, .opening .op-names {
     opacity: 0;
     animation: fadeUp 0.8s ease forwards;
+    pointer-events: none;
 }
 .opening .op-line1 { animation-delay: 0.3s; }
 .opening .op-names { animation-delay: 1.0s; font-size: 26px; letter-spacing: 2px; }
@@ -653,7 +654,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                 </div>
                 <div class="nav-buttons">
                     <a href="https://naver.me/xmBPxvWh" target="_blank" rel="noopener" class="nav-btn">🗺️ 네이버 지도</a>
-                    <a href="https://naver.me/xmBPxvWh" target="_blank" rel="noopener" class="nav-btn">🗺️ 카카오맵</a>
+                    <a href="https://map.kakao.com/link/to/엘로라인가든,37.4796,127.1231" target="_blank" rel="noopener" class="nav-btn">🗺️ 카카오맵</a>
                 </div>
                 <div class="transport-info">
                     <p>🚇 지하철: 8호선 장지역 4번 출구 도보 4분</p>
@@ -805,10 +806,16 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         document.getElementById('mainContent').classList.add('show');
         document.getElementById('musicBtn').style.display = 'flex';
         var bgm = document.getElementById('bgm');
-        bgm.play().then(function() {
-            musicPlaying = true;
-            document.getElementById('musicBtn').classList.add('playing');
-        }).catch(function() {});
+        bgm.volume = 0.5;
+        var playPromise = bgm.play();
+        if (playPromise !== undefined) {
+            playPromise.then(function() {
+                musicPlaying = true;
+                document.getElementById('musicBtn').classList.add('playing');
+            }).catch(function(e) {
+                console.log('BGM play failed:', e);
+            });
+        }
     }
 
     function toggleMusic() {
