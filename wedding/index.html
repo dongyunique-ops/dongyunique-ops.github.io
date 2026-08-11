@@ -861,7 +861,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         var audio = new Audio();
         audio.src = 'bgm.mp3';
         audio.loop = true;
-        audio.volume = 0.5;
+        audio.volume = 0.3;
         window.bgmAudio = audio;
         audio.play().then(function() {
             musicPlaying = true;
@@ -952,7 +952,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
             lastPos = pos;
 
             var progress = checkSegment(pos.x, pos.y);
-            if (progress >= 0.7) {
+            if (progress >= 0.85) {
                 drawing = false;
                 startWedding();
             }
