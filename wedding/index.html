@@ -135,9 +135,15 @@ section {
 }
 .opening-canvas {
     position: absolute;
-    inset: 0;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     z-index: 3;
     touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
 @keyframes pulse {
     0%, 100% { opacity: 0.6; }
@@ -867,26 +873,25 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         var ctx = canvas.getContext('2d');
         var drawing = false;
         var drawnPixels = 0;
-        var threshold = 0;
+        var threshold = 800;
 
         function resizeCanvas() {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-            threshold = canvas.width * canvas.height * 0.003; // ~0.3% of canvas area as threshold
+            canvas.width = window.innerWidth > 480 ? 480 : window.innerWidth;
+            canvas.height = window.innerHeight;
+            threshold = 800;
         }
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
-        // Heart path points for proximity check (centered on screen)
         function getHeartPoints() {
             var cx = canvas.width / 2;
-            var cy = canvas.height / 2;
-            var scale = Math.min(canvas.width, canvas.height) * 0.0055;
+            var cy = canvas.height / 2 - 20;
+            var scale = Math.min(canvas.width, canvas.height) * 0.005;
             var points = [];
             for (var t = 0; t < Math.PI * 2; t += 0.05) {
                 var x = 16 * Math.pow(Math.sin(t), 3);
                 var y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
-                points.push({ x: cx + x * scale, y: cy + y * scale - 20 });
+                points.push({ x: cx + x * scale, y: cy + y * scale });
             }
             return points;
         }
@@ -895,11 +900,10 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         window.addEventListener('resize', function() { heartPoints = getHeartPoints(); });
 
         function isNearHeart(px, py) {
-            var maxDist = 50;
             for (var i = 0; i < heartPoints.length; i++) {
                 var dx = px - heartPoints[i].x;
                 var dy = py - heartPoints[i].y;
-                if (dx * dx + dy * dy < maxDist * maxDist) return true;
+                if (dx * dx + dy * dy < 60 * 60) return true;
             }
             return false;
         }
@@ -912,26 +916,30 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
             return { x: e.clientX - rect.left, y: e.clientY - rect.top };
         }
 
+        var lastPos = null;
+
         function startDraw(e) {
             if (started) return;
-            drawing = true;
-            var pos = getPos(e);
-            ctx.beginPath();
-            ctx.moveTo(pos.x, pos.y);
             e.preventDefault();
+            e.stopPropagation();
+            drawing = true;
+            lastPos = getPos(e);
         }
 
         function draw(e) {
             if (!drawing || started) return;
             e.preventDefault();
+            e.stopPropagation();
             var pos = getPos(e);
             ctx.lineWidth = 4;
             ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
             ctx.strokeStyle = 'rgba(255, 180, 200, 0.85)';
+            ctx.beginPath();
+            ctx.moveTo(lastPos.x, lastPos.y);
             ctx.lineTo(pos.x, pos.y);
             ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(pos.x, pos.y);
+            lastPos = pos;
 
             if (isNearHeart(pos.x, pos.y)) {
                 drawnPixels += 5;
@@ -944,15 +952,17 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
 
         function endDraw(e) {
             drawing = false;
+            lastPos = null;
         }
 
-        canvas.addEventListener('mousedown', startDraw);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', endDraw);
-        canvas.addEventListener('mouseleave', endDraw);
+        canvas.addEventListener('mousedown', startDraw, false);
+        canvas.addEventListener('mousemove', draw, false);
+        canvas.addEventListener('mouseup', endDraw, false);
+        canvas.addEventListener('mouseleave', endDraw, false);
         canvas.addEventListener('touchstart', startDraw, { passive: false });
         canvas.addEventListener('touchmove', draw, { passive: false });
-        canvas.addEventListener('touchend', endDraw);
+        canvas.addEventListener('touchend', endDraw, { passive: false });
+        canvas.addEventListener('touchcancel', endDraw, { passive: false });
     })();
 
     function toggleMusic() {
