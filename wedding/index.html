@@ -69,51 +69,51 @@ section {
 .opening {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 9999;
-    flex-direction: column;
-    gap: 16px;
     transition: opacity 0.8s ease, visibility 0.8s ease;
     cursor: pointer;
-    pointer-events: auto;
 }
 .opening.hide {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
 }
-.opening p, .opening .op-names {
+.opening-bg-img {
+    position: absolute;
+    inset: 0;
+    background: url('cover.jpg') center center / cover no-repeat;
+}
+.opening-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+}
+.opening-text {
+    position: relative;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+.opening-text p {
     opacity: 0;
     animation: fadeUp 0.8s ease forwards;
     pointer-events: none;
+    color: #fff;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.3);
 }
-.opening-photo {
-    width: 180px;
-    height: 240px;
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 24px;
-    opacity: 0;
-    animation: fadeUp 0.8s ease 0.1s forwards;
-    pointer-events: none;
-}
-.opening-photo img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-.opening .op-line1 { animation-delay: 0.3s; }
-.opening .op-names { animation-delay: 1.0s; font-size: 26px; letter-spacing: 2px; }
-.opening .op-date { animation-delay: 1.7s; color: #888; font-size: 13px; letter-spacing: 1px; }
-.opening .op-tap {
+.opening-text .op-line1 { animation-delay: 0.3s; font-size: 16px; font-weight: 300; letter-spacing: 2px; }
+.opening-text .op-names { animation-delay: 1.0s; font-size: 28px; font-weight: 600; letter-spacing: 3px; }
+.opening-text .op-date { animation-delay: 1.7s; font-size: 13px; font-weight: 300; letter-spacing: 2px; color: rgba(255,255,255,0.85); }
+.opening-text .op-tap {
     animation-delay: 2.5s;
-    color: #bbb;
     font-size: 12px;
+    color: rgba(255,255,255,0.7);
     margin-top: 30px;
-    letter-spacing: 1px;
     animation: fadeUp 0.8s ease 2.5s forwards, pulse 2s ease-in-out 3.3s infinite;
 }
 @keyframes pulse {
@@ -531,22 +531,21 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
 <body>
     <!-- Opening Animation -->
     <div class="opening" id="opening">
-        <div class="opening-photo">
-            <img src="cover.jpg" alt="동윤 & 희은">
+        <div class="opening-bg-img"></div>
+        <div class="opening-overlay"></div>
+        <div class="opening-text">
+            <p class="op-line1">우리 결혼합니다</p>
+            <p class="op-names">동윤 &amp; 희은</p>
+            <p class="op-date">2026. 12. 12</p>
+            <p class="op-tap">화면을 터치해주세요</p>
         </div>
-        <p class="op-line1">우리 결혼합니다</p>
-        <p class="op-names">동윤 &amp; 희은</p>
-        <p class="op-date">2026. 12. 12</p>
-        <p class="op-tap">화면을 터치해주세요</p>
     </div>
 
     <!-- 음악 컨트롤 -->
     <button class="music-btn" id="musicBtn" onclick="toggleMusic()" style="display:none;">
         <span id="musicIcon">♪</span>
     </button>
-    <audio id="bgm" loop preload="metadata" playsinline webkit-playsinline>
-        <source src="bgm.mp3" type="audio/mpeg">
-    </audio>
+    <audio id="bgm" style="display:none;"></audio>
 
     <!-- Back Link -->
     <a href="/" class="back-link">&#8592; 목록으로</a>
@@ -674,7 +673,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                 </div>
                 <div class="nav-buttons">
                     <a href="https://naver.me/xmBPxvWh" target="_blank" rel="noopener" class="nav-btn">🗺️ 네이버 지도</a>
-                    <a href="https://map.kakao.com/link/search/엘로라인가든 송파구 충민로 52" target="_blank" rel="noopener" class="nav-btn">🗺️ 카카오맵</a>
+                    <a href="https://map.kakao.com/link/search/엘로라 인 가든" target="_blank" rel="noopener" class="nav-btn">🗺️ 카카오맵</a>
                 </div>
                 <div class="transport-info">
                     <p>🚇 지하철: 8호선 장지역 4번 출구 도보 4분</p>
@@ -821,30 +820,29 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
 
     // 오프닝 터치 → 음악 시작 + 본문 표시
     var musicPlaying = false;
-    var bgm = new Audio('bgm.mp3');
+    var bgm = document.getElementById('bgm');
+    bgm.src = 'https://dongyunique-ops.github.io/wedding/bgm.mp3';
     bgm.loop = true;
     bgm.volume = 0.5;
+    bgm.preload = 'auto';
     var started = false;
 
     function startWedding() {
         if (started) return;
         started = true;
         
-        // 오프닝 숨기고 본문 표시
         document.getElementById('opening').classList.add('hide');
         document.getElementById('mainContent').classList.add('show');
         document.getElementById('musicBtn').style.display = 'flex';
         
-        // 음악 재생
         bgm.play().then(function() {
             musicPlaying = true;
             document.getElementById('musicBtn').classList.add('playing');
         }).catch(function(e) {
-            console.log('play failed:', e);
+            console.log('play error:', e);
         });
     }
 
-    // 클릭 + 터치 둘 다 처리
     var openingEl = document.getElementById('opening');
     openingEl.addEventListener('click', startWedding);
     openingEl.addEventListener('touchstart', startWedding);
