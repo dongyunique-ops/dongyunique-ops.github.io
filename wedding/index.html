@@ -75,6 +75,8 @@ section {
     z-index: 9999;
     transition: opacity 0.8s ease, visibility 0.8s ease;
     cursor: pointer;
+    max-width: 480px;
+    margin: 0 auto;
 }
 .opening.hide {
     opacity: 0;
@@ -873,14 +875,17 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         var ctx = canvas.getContext('2d');
         var drawing = false;
         var drawnPixels = 0;
-        var threshold = 800;
+        var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        var threshold = isMobile ? 200 : 600;
 
         function resizeCanvas() {
-            canvas.width = window.innerWidth > 480 ? 480 : window.innerWidth;
-            canvas.height = window.innerHeight;
-            threshold = 800;
+            var container = canvas.parentElement;
+            canvas.width = container.clientWidth || window.innerWidth;
+            canvas.height = container.clientHeight || window.innerHeight;
         }
-        resizeCanvas();
+        
+        // 약간 딜레이 후 초기화 (DOM 렌더링 완료 대기)
+        setTimeout(resizeCanvas, 100);
         window.addEventListener('resize', resizeCanvas);
 
         function getHeartPoints() {
@@ -896,14 +901,16 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
             return points;
         }
 
-        var heartPoints = getHeartPoints();
+        var heartPoints = [];
+        setTimeout(function() { heartPoints = getHeartPoints(); }, 150);
         window.addEventListener('resize', function() { heartPoints = getHeartPoints(); });
 
         function isNearHeart(px, py) {
+            if (heartPoints.length === 0) return true; // 포인트 없으면 어디든 OK
             for (var i = 0; i < heartPoints.length; i++) {
                 var dx = px - heartPoints[i].x;
                 var dy = py - heartPoints[i].y;
-                if (dx * dx + dy * dy < 60 * 60) return true;
+                if (dx * dx + dy * dy < 80 * 80) return true;
             }
             return false;
         }
@@ -931,26 +938,27 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
             e.preventDefault();
             e.stopPropagation();
             var pos = getPos(e);
-            ctx.lineWidth = 4;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.strokeStyle = 'rgba(255, 180, 200, 0.85)';
-            ctx.beginPath();
-            ctx.moveTo(lastPos.x, lastPos.y);
-            ctx.lineTo(pos.x, pos.y);
-            ctx.stroke();
-            lastPos = pos;
-
-            if (isNearHeart(pos.x, pos.y)) {
-                drawnPixels += 5;
+            
+            if (lastPos) {
+                ctx.lineWidth = 4;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.strokeStyle = 'rgba(255, 180, 200, 0.85)';
+                ctx.beginPath();
+                ctx.moveTo(lastPos.x, lastPos.y);
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
             }
+            lastPos = pos;
+            drawnPixels += 8;
+
             if (drawnPixels > threshold) {
                 drawing = false;
                 startWedding();
             }
         }
 
-        function endDraw(e) {
+        function endDraw() {
             drawing = false;
             lastPos = null;
         }
