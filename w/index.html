@@ -1085,18 +1085,27 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
 
     // 스와이프 감지
     var lb = document.getElementById('lightbox');
+    var lbImg = document.getElementById('lightbox-img');
+    var swipeHandled = false;
+
     lb.addEventListener('touchstart', function(e) {
         touchStartX = e.touches[0].clientX;
+        swipeHandled = false;
     }, { passive: true });
     lb.addEventListener('touchend', function(e) {
+        if (swipeHandled) return;
         touchEndX = e.changedTouches[0].clientX;
         var diff = touchStartX - touchEndX;
         if (Math.abs(diff) > 50) {
-            if (diff > 0) { nextPhoto(e); }
-            else { prevPhoto(e); }
-        } else if (Math.abs(diff) < 10) {
-            closePhoto();
+            swipeHandled = true;
+            if (diff > 0) { currentPhoto = (currentPhoto + 1) % photos.length; showPhoto(); }
+            else { currentPhoto = (currentPhoto - 1 + photos.length) % photos.length; showPhoto(); }
         }
+    });
+
+    // 배경(이미지 바깥) 클릭 시 닫기
+    lb.addEventListener('click', function(e) {
+        if (e.target === lb) closePhoto();
     });
 
     // Toast notification
