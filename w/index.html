@@ -559,6 +559,31 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
     pointer-events: none;
 }
 .toast.show { opacity: 1; }
+
+/* 라이트박스 */
+.lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.9);
+    z-index: 10001;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    touch-action: none;
+}
+.lightbox.show {
+    display: flex;
+}
+.lightbox img {
+    max-width: 90%;
+    max-height: 85vh;
+    object-fit: contain;
+    border-radius: 4px;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
     </style>
 </head>
 <body>
@@ -680,15 +705,9 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                 <div class="section-title">GALLERY</div>
                 <p class="gallery-subtitle">사진을 클릭하시면 전체 화면 보기가 가능합니다</p>
                 <div class="gallery-grid">
-                    <div class="gallery-item">🤵</div>
-                    <div class="gallery-item">👰</div>
-                    <div class="gallery-item">💐</div>
-                    <div class="gallery-item">💍</div>
-                    <div class="gallery-item">🥂</div>
-                    <div class="gallery-item">🎂</div>
-                    <div class="gallery-item">📸</div>
-                    <div class="gallery-item">🌸</div>
-                    <div class="gallery-item">💒</div>
+                    <div class="gallery-item" onclick="openPhoto('photo1.jpg')"><img src="photo1.jpg" alt="웨딩 사진 1" style="width:100%;height:100%;object-fit:cover;"></div>
+                    <div class="gallery-item" onclick="openPhoto('photo2.jpg')"><img src="photo2.jpg" alt="웨딩 사진 2" style="width:100%;height:100%;object-fit:cover;"></div>
+                    <div class="gallery-item" onclick="openPhoto('photo3.jpg')"><img src="photo3.jpg" alt="웨딩 사진 3" style="width:100%;height:100%;object-fit:cover;"></div>
                 </div>
             </div>
         </section>
@@ -835,6 +854,11 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
 
     <!-- Toast -->
     <div class="toast" id="toast"></div>
+
+    <!-- 사진 라이트박스 -->
+    <div class="lightbox" id="lightbox" onclick="closePhoto()">
+        <img id="lightbox-img" src="" alt="사진">
+    </div>
     <!-- Kakao SDK -->
     <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js"></script>
     <script>
@@ -981,6 +1005,15 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
             musicPlaying = true;
             document.getElementById('musicBtn').classList.add('playing');
         }
+    }
+
+    // 사진 라이트박스
+    function openPhoto(src) {
+        document.getElementById('lightbox-img').src = src;
+        document.getElementById('lightbox').classList.add('show');
+    }
+    function closePhoto() {
+        document.getElementById('lightbox').classList.remove('show');
     }
 
     // Toast notification
