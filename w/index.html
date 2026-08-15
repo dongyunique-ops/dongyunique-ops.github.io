@@ -303,6 +303,9 @@ section {
     font-size: 32px;
     cursor: pointer;
     transition: opacity 0.2s;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
 }
 .gallery-item:hover { opacity: 0.8; }
 
@@ -565,12 +568,12 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.9);
+    background: rgba(0,0,0,0.95);
     z-index: 10001;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    touch-action: none;
+    touch-action: pan-y;
+    -webkit-tap-highlight-color: transparent;
 }
 .lightbox.show {
     display: flex;
@@ -583,6 +586,46 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
     touch-action: none;
     user-select: none;
     -webkit-user-select: none;
+    transition: opacity 0.2s;
+}
+.lightbox-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: #fff;
+    font-size: 28px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+}
+.lightbox-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255,255,255,0.7);
+    font-size: 24px;
+    cursor: pointer;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+}
+.lightbox-arrow:hover { color: #fff; }
+.lightbox-prev { left: 12px; }
+.lightbox-next { right: 12px; }
+.lightbox-counter {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255,255,255,0.6);
+    font-size: 12px;
 }
     </style>
 </head>
@@ -856,8 +899,12 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
     <div class="toast" id="toast"></div>
 
     <!-- 사진 라이트박스 -->
-    <div class="lightbox" id="lightbox" onclick="closePhoto()">
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-close" onclick="closePhoto()">✕</div>
+        <div class="lightbox-arrow lightbox-prev" onclick="prevPhoto(event)">&#10094;</div>
         <img id="lightbox-img" src="" alt="사진">
+        <div class="lightbox-arrow lightbox-next" onclick="nextPhoto(event)">&#10095;</div>
+        <div class="lightbox-counter" id="lightbox-counter"></div>
     </div>
     <!-- Kakao SDK -->
     <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js"></script>
@@ -1007,14 +1054,50 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         }
     }
 
-    // 사진 라이트박스
+    // 사진 라이트박스 + 스와이프
+    var photos = ['photo1.jpg', 'photo2.jpg', 'photo3.jpg'];
+    var currentPhoto = 0;
+    var touchStartX = 0;
+    var touchEndX = 0;
+
     function openPhoto(src) {
-        document.getElementById('lightbox-img').src = src;
+        currentPhoto = photos.indexOf(src);
+        showPhoto();
         document.getElementById('lightbox').classList.add('show');
     }
     function closePhoto() {
         document.getElementById('lightbox').classList.remove('show');
     }
+    function showPhoto() {
+        document.getElementById('lightbox-img').src = photos[currentPhoto];
+        document.getElementById('lightbox-counter').textContent = (currentPhoto + 1) + ' / ' + photos.length;
+    }
+    function prevPhoto(e) {
+        e.stopPropagation();
+        currentPhoto = (currentPhoto - 1 + photos.length) % photos.length;
+        showPhoto();
+    }
+    function nextPhoto(e) {
+        e.stopPropagation();
+        currentPhoto = (currentPhoto + 1) % photos.length;
+        showPhoto();
+    }
+
+    // 스와이프 감지
+    var lb = document.getElementById('lightbox');
+    lb.addEventListener('touchstart', function(e) {
+        touchStartX = e.touches[0].clientX;
+    }, { passive: true });
+    lb.addEventListener('touchend', function(e) {
+        touchEndX = e.changedTouches[0].clientX;
+        var diff = touchStartX - touchEndX;
+        if (Math.abs(diff) > 50) {
+            if (diff > 0) { nextPhoto(e); }
+            else { prevPhoto(e); }
+        } else if (Math.abs(diff) < 10) {
+            closePhoto();
+        }
+    });
 
     // Toast notification
     function showToast(msg) {
