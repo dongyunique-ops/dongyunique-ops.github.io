@@ -190,7 +190,15 @@ section {
     display: flex;
     align-items: flex-end;
     justify-content: center;
+    overflow: hidden;
+}
+.hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
     background: url('hero_bg.jpg') center top / cover no-repeat;
+    transform: scale(1);
+    will-change: auto;
 }
 .hero::after {
     content: '';
