@@ -183,7 +183,26 @@ section {
     to { opacity: 1; transform: translateY(0); }
 }
 /* Hero */
-.hero { padding: 100px 24px 80px; }
+.hero {
+    padding: 0;
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: url('hero_bg.jpg') center center / cover no-repeat;
+}
+.hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.6);
+}
+.hero .inner {
+    position: relative;
+    z-index: 1;
+    padding: 100px 24px 80px;
+}
 .hero-subtitle {
     font-family: 'Cormorant Garamond', serif;
     font-size: 12px;
@@ -858,13 +877,11 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         <section>
             <div class="inner fade-in">
                 <div class="section-title">GUEST SNAP</div>
-                <p class="gallery-subtitle">신랑·신부의 행복한 순간을 담아주세요</p>
                 <div class="snap-card">
-                    <p class="snap-notice">2026년 12월 12일부터 사진 및 영상 업로드가 가능합니다.</p>
-                    <ol>
-                        <li>📸저희의 스냅 작가가 되어주세요!📸</li>
-                    </ol>
-                    <p style="text-align:center;font-size:14px;color:#444;margin-top:16px;line-height:2.2;">
+                    <p style="text-align:center;font-size:15px;color:#444;margin-bottom:20px;">
+                        📸 저희의 스냅 작가가 되어주세요! 📸
+                    </p>
+                    <p style="text-align:center;font-size:13px;color:#666;line-height:2.2;">
                         [미션! 이 순간들을 놓치지 마세요!]<br>
                         1. 신부 대기실에서 설렘 가득한 순간<br>
                         2. 웃음 만개! 행복한 신랑신부<br>
@@ -874,15 +891,19 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                         (오늘 주인공은 저희뿐만이 아니에요!)<br>
                         6. 감성 한 스푼 '예술이란 이런 것이다' 한 컷!
                     </p>
-                    <p style="text-align:center;font-size:14px;color:#444;margin-top:24px;line-height:2;">
+                    <p style="text-align:center;font-size:13px;color:#444;margin-top:24px;line-height:2;">
                         🎁 미션 수행자 중 가장 멋진 컷을<br>
                         남겨주신 분께 맛있는 밥 한 끼를 쏩니다!
                     </p>
-                    <p style="text-align:center;font-size:14px;color:#444;margin-top:24px;line-height:2;">
-                        당일날, 아래 공유 버튼을 통해 올려주세요!<br>
+                    <p style="text-align:center;font-size:13px;color:#888;margin-top:20px;line-height:1.8;">
+                        당일날, 아래 버튼을 통해 올려주세요!<br>
                         많은 참여 부탁드려요! 💖
                     </p>
-                    <button class="snap-upload-btn" onclick="alert('2026년 12월 12일부터 업로드 가능합니다.')">📷 사진 업로드하기</button>
+                    <label class="snap-upload-btn" style="cursor:pointer;">
+                        📷 사진 및 영상 업로드
+                        <input type="file" id="snapFileInput" accept="image/*,video/*" multiple style="display:none;" onchange="uploadSnap(this)">
+                    </label>
+                    <p id="uploadStatus" style="text-align:center;font-size:12px;color:#888;margin-top:10px;"></p>
                 </div>
             </div>
         </section>
@@ -1133,6 +1154,46 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
             // 앱 없으면 웹으로
             window.open('https://tmap.life/navigate?goalName=' + encodeURIComponent('서울 송파구 충민로 52'), '_blank');
         }, 1500);
+    }
+
+    // 구글드라이브 사진 업로드
+    function uploadSnap(input) {
+        var files = input.files;
+        if (!files.length) return;
+        var status = document.getElementById('uploadStatus');
+        status.textContent = '업로드 중... (0/' + files.length + ')';
+        var uploaded = 0;
+
+        for (var i = 0; i < files.length; i++) {
+            (function(file) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var base64 = e.target.result.split(',')[1];
+                    var payload = {
+                        file: base64,
+                        name: file.name,
+                        type: file.type
+                    };
+                    fetch('https://script.google.com/a/macros/woowahan.com/s/AKfycbyn9uliJcAIQauAMZP_txqEklGXousdJ4BOX_ONmP_9ButUI6UbfT1lZ6uynoYw2gp4/exec', {
+                        method: 'POST',
+                        body: JSON.stringify(payload)
+                    }).then(function(res) { return res.json(); })
+                    .then(function() {
+                        uploaded++;
+                        status.textContent = '업로드 중... (' + uploaded + '/' + files.length + ')';
+                        if (uploaded === files.length) {
+                            status.textContent = '✅ ' + files.length + '개 파일 업로드 완료!';
+                            showToast('업로드 완료!');
+                        }
+                    }).catch(function() {
+                        uploaded++;
+                        status.textContent = '업로드 오류가 발생했습니다';
+                    });
+                };
+                reader.readAsDataURL(file);
+            })(files[i]);
+        }
+        input.value = '';
     }
 
     // Toast notification
