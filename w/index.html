@@ -188,20 +188,20 @@ section {
     position: relative;
     min-height: 100vh;
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: center;
-    background: url('hero_bg.jpg') center center / cover no-repeat;
+    background: url('hero_bg.jpg') center top / cover no-repeat;
 }
 .hero::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: rgba(255,255,255,0.6);
+    background: linear-gradient(to bottom, rgba(255,255,255,0) 40%, rgba(255,255,255,0.85) 70%);
 }
 .hero .inner {
     position: relative;
     z-index: 1;
-    padding: 100px 24px 80px;
+    padding: 0 24px 80px;
 }
 .hero-subtitle {
     font-family: 'Cormorant Garamond', serif;
@@ -893,7 +893,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                     </p>
                     <p style="text-align:center;font-size:13px;color:#444;margin-top:24px;line-height:2;">
                         🎁 미션 수행자 중 가장 멋진 컷을<br>
-                        남겨주신 분께 맛있는 밥 한 끼를 쏩니다!
+                        남겨주신 분께 배민쿠폰을 쏩니다!
                     </p>
                     <p style="text-align:center;font-size:13px;color:#888;margin-top:20px;line-height:1.8;">
                         당일날, 아래 버튼을 통해 올려주세요!<br>
