@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
-    <link rel="preload" as="image" href="cover.jpg">
+    <link rel="preload" as="image" href="cover.jpg" fetchpriority="high">
     <link rel="preload" as="image" href="hero_bg.jpg">
     <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -91,7 +91,7 @@ section {
 .opening-bg-img {
     position: absolute;
     inset: 0;
-    background: url('cover.jpg') center center / cover no-repeat;
+    background: #898583 url('cover.jpg') center center / cover no-repeat;
     image-rendering: auto;
     -webkit-image-rendering: auto;
 }
