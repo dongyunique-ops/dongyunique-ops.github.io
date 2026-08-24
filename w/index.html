@@ -13,7 +13,7 @@
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
     <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overscroll-behavior: none; }
 body {
     font-family: 'Pretendard', -apple-system, sans-serif;
     color: #222;
@@ -24,6 +24,7 @@ body {
     font-size: 15px;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
+    overscroll-behavior: none;
 }
 .serif { font-family: 'Cormorant Garamond', serif; }
 section {
@@ -798,7 +799,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                         <img src="icon.tmap.svg" style="width:22px;height:22px;" alt="티맵"> 티맵
                     </a>
                     <a href="https://map.kakao.com/link/search/엘로라 인 가든" target="_blank" rel="noopener" class="nav-btn">
-                        <img src="icon_kakao.png" style="width:22px;height:22px;" alt="카카오내비"> 카카오내비
+                        <img src="icon_kakao.png" style="width:22px;height:22px;" alt="카카오맵"> 카카오맵
                     </a>
                     <a href="https://naver.me/xmBPxvWh" target="_blank" rel="noopener" class="nav-btn">
                         <img src="icon_naver.png" style="width:22px;height:22px;" alt="네이버 지도"> 네이버 지도
@@ -1099,6 +1100,15 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         }
     }
 
+    // 백그라운드 재생 차단 - 페이지 안 보이면 정지
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden && musicPlaying && window.bgmAudio) {
+            window.bgmAudio.pause();
+            musicPlaying = false;
+            document.getElementById('musicBtn').classList.remove('playing');
+        }
+    });
+
     // 사진 라이트박스 + 스와이프
     var photos = ['photo1.jpg', 'photo2.jpg', 'photo3.jpg'];
     var currentPhoto = 0;
@@ -1176,14 +1186,9 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                 var reader = new FileReader();
                 reader.onload = function(e) {
                     var base64 = e.target.result.split(',')[1];
-                    var payload = {
-                        file: base64,
-                        name: file.name,
-                        type: file.type
-                    };
-                    fetch('https://script.google.com/a/macros/woowahan.com/s/AKfycbyn9uliJcAIQauAMZP_txqEklGXousdJ4BOX_ONmP_9ButUI6UbfT1lZ6uynoYw2gp4/exec', {
+                    fetch(SCRIPT_URL, {
                         method: 'POST',
-                        body: JSON.stringify(payload)
+                        body: JSON.stringify({ type: 'photo', file: base64, filename: file.name, mimetype: file.type })
                     }).then(function(res) { return res.json(); })
                     .then(function() {
                         uploaded++;
@@ -1301,29 +1306,24 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         return div.innerHTML;
     }
 
-    // Guest Book (localStorage)
-    function getMessages() {
-        try {
-            return JSON.parse(localStorage.getItem('wedding_messages') || '[]');
-        } catch { return []; }
-    }
-
-    function saveMessages(msgs) {
-        localStorage.setItem('wedding_messages', JSON.stringify(msgs));
-    }
+    // Guest Book (Google Sheets 연동)
+    var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzPxdXX9e4CvXPW5FroXzAGBOylhqG1GoYWZ722EotcZkG00TXN9kunw-3kZ3U1oOSK7Q/exec';
 
     function renderMessages() {
         const list = document.getElementById('msgList');
-        const msgs = getMessages();
-        list.innerHTML = msgs.map(m => `
-            <div class="msg-item">
-                <div class="msg-item-header">
-                    <span class="msg-item-name">${escapeHtml(m.name)}</span>
-                    <span class="msg-item-date">${escapeHtml(m.date)}</span>
-                </div>
-                <p class="msg-item-text">${escapeHtml(m.text)}</p>
-            </div>
-        `).join('');
+        fetch(SCRIPT_URL)
+            .then(res => res.json())
+            .then(msgs => {
+                list.innerHTML = msgs.map(m => `
+                    <div class="msg-item">
+                        <div class="msg-item-header">
+                            <span class="msg-item-name">${escapeHtml(m.name)}</span>
+                            <span class="msg-item-date">${escapeHtml(m.date)}</span>
+                        </div>
+                        <p class="msg-item-text">${escapeHtml(m.text)}</p>
+                    </div>
+                `).join('');
+            }).catch(() => { list.innerHTML = ''; });
     }
 
     function submitMessage() {
@@ -1335,15 +1335,20 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
             showToast('이름과 메시지를 입력해주세요');
             return;
         }
-        const msgs = getMessages();
         const now = new Date();
         const date = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
-        msgs.unshift({ name, text, date });
-        saveMessages(msgs);
-        nameEl.value = '';
-        textEl.value = '';
-        renderMessages();
-        showToast('메시지가 등록되었습니다');
+        
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({ type: 'message', name, text, date })
+        }).then(() => {
+            nameEl.value = '';
+            textEl.value = '';
+            showToast('메시지가 등록되었습니다');
+            renderMessages();
+        }).catch(() => {
+            showToast('전송 실패. 다시 시도해주세요.');
+        });
     }
 
     // Init messages
