@@ -491,6 +491,30 @@ section {
     text-align: center;
 }
 .snap-upload-btn:hover { background: #6b8a5a; }
+.upload-progress-wrap {
+    display: none;
+    margin-top: 14px;
+}
+.upload-progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #eee;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.upload-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: #7d9a6b;
+    border-radius: 4px;
+    transition: width 0.2s ease;
+}
+.upload-progress-text {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #888;
+    text-align: center;
+}
 
 /* Message */
 .msg-form { margin-bottom: 32px; }
@@ -911,6 +935,10 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                         <input type="file" id="snapFileInput" accept="image/*,video/*" multiple style="display:none;" onchange="uploadSnap(this)">
                     </label>
                     <p id="uploadStatus" style="text-align:center;font-size:12px;color:#888;margin-top:10px;"></p>
+                    <div class="upload-progress-wrap" id="uploadProgressWrap">
+                        <div class="upload-progress-bar"><div class="upload-progress-fill" id="uploadProgressFill"></div></div>
+                        <p class="upload-progress-text" id="uploadProgressText"></p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1194,44 +1222,117 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         }, 1500);
     }
 
-    // 구글드라이브 사진 업로드
-    function uploadSnap(input) {
-        var files = input.files;
-        if (!files.length) return;
-        var status = document.getElementById('uploadStatus');
-        status.textContent = '업로드 중...';
-        var total = files.length;
-        var uploaded = 0;
-        var failed = 0;
-
-        for (var i = 0; i < total; i++) {
-            (function(file) {
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    var base64 = e.target.result.split(',')[1];
-                    fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({ type: 'photo', file: base64, filename: file.name, mimetype: file.type })
-                    }).then(function(res) { return res.json(); })
-                    .then(function() {
-                        uploaded++;
-                        checkDone();
-                    }).catch(function() {
-                        failed++;
-                        checkDone();
-                    });
-                };
-                reader.readAsDataURL(file);
-            })(files[i]);
-        }
-
-        function checkDone() {
-            if (uploaded + failed === total) {
-                status.textContent = '';
-                showUploadComplete(uploaded);
+    // 사진 리사이즈/압축 (화질은 유지하면서 용량만 줄여 업로드 속도 개선)
+    // 긴 변 1920px 초과 시에만 축소, JPEG 85% 품질로 재인코딩. 동영상/GIF는 원본 그대로 업로드.
+    function compressImage(file) {
+        var MAX_DIMENSION = 1920;
+        var QUALITY = 0.85;
+        return new Promise(function(resolve) {
+            if (!file.type.startsWith('image/') || file.type === 'image/gif') {
+                resolve(file);
+                return;
             }
-        }
+            var url = URL.createObjectURL(file);
+            var img = new Image();
+            img.onload = function() {
+                URL.revokeObjectURL(url);
+                var w = img.naturalWidth, h = img.naturalHeight;
+                if (!w || !h || Math.max(w, h) <= MAX_DIMENSION) {
+                    resolve(file);
+                    return;
+                }
+                var scale = MAX_DIMENSION / Math.max(w, h);
+                var canvas = document.createElement('canvas');
+                canvas.width = Math.round(w * scale);
+                canvas.height = Math.round(h * scale);
+                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                canvas.toBlob(function(blob) {
+                    if (!blob) { resolve(file); return; }
+                    resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+                }, 'image/jpeg', QUALITY);
+            };
+            img.onerror = function() {
+                URL.revokeObjectURL(url);
+                resolve(file); // 디코딩 실패 시(예: 일부 브라우저의 HEIC) 원본 그대로 업로드
+            };
+            img.src = url;
+        });
+    }
+
+    // 구글드라이브 업로드 (XHR로 업로드 진행률 추적)
+    function uploadFileWithProgress(file, onProgress) {
+        return new Promise(function(resolve, reject) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var base64 = e.target.result.split(',')[1];
+                var payload = JSON.stringify({ type: 'photo', file: base64, filename: file.name, mimetype: file.type });
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', SCRIPT_URL, true);
+                xhr.upload.onprogress = function(evt) {
+                    if (evt.lengthComputable) onProgress(evt.loaded);
+                };
+                xhr.onload = function() { onProgress(payload.length); resolve(); };
+                xhr.onerror = function() { reject(); };
+                xhr.send(payload);
+            };
+            reader.onerror = function() { reject(); };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // 사진 및 영상 업로드 (진행률 표시 + 사진 자동 압축)
+    function uploadSnap(input) {
+        var rawFiles = Array.prototype.slice.call(input.files);
+        if (!rawFiles.length) return;
         input.value = '';
+
+        var status = document.getElementById('uploadStatus');
+        var progressWrap = document.getElementById('uploadProgressWrap');
+        var progressFill = document.getElementById('uploadProgressFill');
+        var progressText = document.getElementById('uploadProgressText');
+
+        status.textContent = '';
+        progressWrap.style.display = 'block';
+        progressFill.style.width = '0%';
+        progressText.textContent = '준비 중...';
+
+        var total = rawFiles.length;
+
+        Promise.all(rawFiles.map(compressImage)).then(function(files) {
+            var totalBytes = files.reduce(function(sum, f) { return sum + f.size; }, 0) || 1;
+            var loadedBytes = files.map(function() { return 0; });
+            var doneCount = 0;
+            var failed = 0;
+
+            function updateProgress() {
+                var loaded = loadedBytes.reduce(function(a, b) { return a + b; }, 0);
+                var pct = Math.min(100, Math.round(loaded / totalBytes * 100));
+                progressFill.style.width = pct + '%';
+                progressText.textContent = doneCount + ' / ' + total + '개 업로드 중 · ' + pct + '%';
+            }
+            updateProgress();
+
+            function checkDone() {
+                if (doneCount + failed === total) {
+                    progressWrap.style.display = 'none';
+                    showUploadComplete(doneCount);
+                }
+            }
+
+            files.forEach(function(file, i) {
+                uploadFileWithProgress(file, function(loaded) {
+                    loadedBytes[i] = loaded;
+                    updateProgress();
+                }).then(function() {
+                    doneCount++;
+                    updateProgress();
+                    checkDone();
+                }).catch(function() {
+                    failed++;
+                    checkDone();
+                });
+            });
+        });
     }
 
     function showUploadComplete(count) {
