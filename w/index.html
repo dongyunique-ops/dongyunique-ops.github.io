@@ -906,7 +906,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                         많은 참여 부탁드려요! 💖
                     </p>
                     <label class="snap-upload-btn" style="cursor:pointer;">
-                        📷 사진 및 영상 업로드 (12월 12일 OPEN)
+                        사진 및 영상 업로드 (12월 12일 OPEN)
                         <input type="file" id="snapFileInput" accept="image/*,video/*" multiple style="display:none;" onchange="uploadSnap(this)">
                     </label>
                     <p id="uploadStatus" style="text-align:center;font-size:12px;color:#888;margin-top:10px;"></p>
@@ -1183,10 +1183,12 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         var files = input.files;
         if (!files.length) return;
         var status = document.getElementById('uploadStatus');
-        status.textContent = '업로드 중... (0/' + files.length + ')';
+        status.textContent = '업로드 중...';
+        var total = files.length;
         var uploaded = 0;
+        var failed = 0;
 
-        for (var i = 0; i < files.length; i++) {
+        for (var i = 0; i < total; i++) {
             (function(file) {
                 var reader = new FileReader();
                 reader.onload = function(e) {
@@ -1197,20 +1199,35 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                     }).then(function(res) { return res.json(); })
                     .then(function() {
                         uploaded++;
-                        status.textContent = '업로드 중... (' + uploaded + '/' + files.length + ')';
-                        if (uploaded === files.length) {
-                            status.textContent = '✅ ' + files.length + '개 파일 업로드 완료!';
-                            showToast('업로드 완료!');
-                        }
+                        checkDone();
                     }).catch(function() {
-                        uploaded++;
-                        status.textContent = '업로드 오류가 발생했습니다';
+                        failed++;
+                        checkDone();
                     });
                 };
                 reader.readAsDataURL(file);
             })(files[i]);
         }
+
+        function checkDone() {
+            if (uploaded + failed === total) {
+                status.textContent = '';
+                showUploadComplete(uploaded);
+            }
+        }
         input.value = '';
+    }
+
+    function showUploadComplete(count) {
+        var overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10002;display:flex;align-items:center;justify-content:center;';
+        overlay.innerHTML = '<div style="background:#fff;border-radius:16px;padding:40px 30px;text-align:center;max-width:300px;margin:0 20px;">' +
+            '<p style="font-size:40px;margin-bottom:16px;">📸</p>' +
+            '<p style="font-size:18px;font-weight:600;color:#333;margin-bottom:8px;">작가님 감사합니다!</p>' +
+            '<p style="font-size:14px;color:#888;margin-bottom:24px;">' + count + '개 파일이 업로드 되었습니다</p>' +
+            '<button onclick="this.closest(\'div\').parentElement.remove()" style="padding:12px 32px;background:#7d9a6b;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer;">확인</button>' +
+            '</div>';
+        document.body.appendChild(overlay);
     }
 
     // Toast notification
@@ -1330,13 +1347,14 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         const list = document.getElementById('msgList');
         const btn = document.getElementById('msgShowAll');
         const toShow = all ? allMessages : allMessages.slice(0, 4);
-        list.innerHTML = toShow.map(m => `
+        list.innerHTML = toShow.map((m, i) => `
             <div class="msg-item">
                 <div class="msg-item-header">
                     <span class="msg-item-name">${escapeHtml(m.name)}</span>
                     <span class="msg-item-date">${escapeHtml(m.date)}</span>
                 </div>
-                <p class="msg-item-text">${escapeHtml(m.text)}</p>
+                <p class="msg-item-text" id="msg-text-${i}">${escapeHtml(m.text)}</p>
+                <button onclick="editMessage(${i})" style="background:none;border:none;color:#aaa;font-size:11px;cursor:pointer;margin-top:4px;">수정</button>
             </div>
         `).join('');
         if (allMessages.length > 4 && !all) {
@@ -1344,6 +1362,17 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
             btn.textContent = '전체 방명록 보기 (' + allMessages.length + '개)';
         } else {
             btn.style.display = 'none';
+        }
+    }
+
+    function editMessage(index) {
+        var m = allMessages[index];
+        var newText = prompt('메시지 수정:', m.text);
+        if (newText !== null && newText.trim() !== '') {
+            allMessages[index].text = newText.trim();
+            displayMessages(false);
+            // 서버에도 반영 (전체 시트 업데이트는 복잡하므로 토스트로 안내)
+            showToast('수정되었습니다 (새로고침 시 원래 내용으로 돌아갈 수 있습니다)');
         }
     }
 
