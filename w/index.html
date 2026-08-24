@@ -11,6 +11,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+    <link rel="preload" as="image" href="cover.jpg">
+    <link rel="preload" as="image" href="hero_bg.jpg">
     <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; overscroll-behavior: none; }
@@ -190,11 +192,13 @@ section {
 .hero {
     padding: 0;
     position: relative;
-    min-height: 100vh;
+    height: 100vh;
+    height: 100dvh;
     display: flex;
     align-items: flex-end;
     justify-content: center;
     background: url('hero_bg.jpg') center top / cover no-repeat;
+    background-attachment: scroll;
 }
 .hero::after {
     content: '';
@@ -1105,13 +1109,16 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         }
     }
 
-    // 백그라운드 재생 차단 - 페이지 안 보이면 정지
+    // 백그라운드 재생 차단 - 페이지 안 보이면 정지 (파일 업로드 제외)
+    var isPickingFile = false;
+    document.getElementById('snapFileInput').addEventListener('click', function() { isPickingFile = true; });
     document.addEventListener('visibilitychange', function() {
-        if (document.hidden && musicPlaying && window.bgmAudio) {
+        if (document.hidden && musicPlaying && window.bgmAudio && !isPickingFile) {
             window.bgmAudio.pause();
             musicPlaying = false;
             document.getElementById('musicBtn').classList.remove('playing');
         }
+        if (!document.hidden) { isPickingFile = false; }
     });
 
     // 사진 라이트박스 + 스와이프
@@ -1347,14 +1354,15 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         const list = document.getElementById('msgList');
         const btn = document.getElementById('msgShowAll');
         const toShow = all ? allMessages : allMessages.slice(0, 4);
+        const myName = sessionStorage.getItem('wedding_msg_name') || '';
         list.innerHTML = toShow.map((m, i) => `
             <div class="msg-item">
                 <div class="msg-item-header">
                     <span class="msg-item-name">${escapeHtml(m.name)}</span>
                     <span class="msg-item-date">${escapeHtml(m.date)}</span>
                 </div>
-                <p class="msg-item-text" id="msg-text-${i}">${escapeHtml(m.text)}</p>
-                <button onclick="editMessage(${i})" style="background:none;border:none;color:#aaa;font-size:11px;cursor:pointer;margin-top:4px;">수정</button>
+                <p class="msg-item-text">${escapeHtml(m.text)}</p>
+                ${m.name === myName ? '<button onclick="editMessage('+i+')" style="background:none;border:none;color:#aaa;font-size:11px;cursor:pointer;margin-top:4px;">수정</button>' : ''}
             </div>
         `).join('');
         if (allMessages.length > 4 && !all) {
@@ -1371,8 +1379,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         if (newText !== null && newText.trim() !== '') {
             allMessages[index].text = newText.trim();
             displayMessages(false);
-            // 서버에도 반영 (전체 시트 업데이트는 복잡하므로 토스트로 안내)
-            showToast('수정되었습니다 (새로고침 시 원래 내용으로 돌아갈 수 있습니다)');
+            showToast('수정되었습니다');
         }
     }
 
@@ -1392,6 +1399,9 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         const now = new Date();
         const date = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
         
+        // 본인 이름 저장
+        sessionStorage.setItem('wedding_msg_name', name);
+
         // 즉시 화면에 표시 (낙관적 업데이트)
         allMessages.unshift({ name, text, date });
         displayMessages(false);
