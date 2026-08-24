@@ -827,7 +827,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                     <a href="https://map.kakao.com/link/search/엘로라 인 가든" target="_blank" rel="noopener" class="nav-btn">
                         <img src="icon_kakao.png" style="width:22px;height:22px;" alt="카카오맵"> 카카오맵
                     </a>
-                    <a href="https://m.place.naver.com/place/1526797980/photo" target="_blank" rel="noopener" class="nav-btn">
+                    <a href="https://map.naver.com/p/search/엘로라 인 가든 서울 송파구 충민로 52" target="_blank" rel="noopener" class="nav-btn">
                         <img src="icon_naver.png" style="width:22px;height:22px;" alt="네이버 지도"> 네이버 지도
                     </a>
                 </div>
@@ -1270,10 +1270,14 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                 var base64 = e.target.result.split(',')[1];
                 var payload = JSON.stringify({ type: 'photo', file: base64, filename: file.name, mimetype: file.type });
 
-                var estimatedMs = Math.max(500, payload.length / 2000); // 약 2MB/s 가정
+                // 영상은 서버(앱스스크립트→드라이브 저장)쪽 처리가 사진보다 오래 걸리므로 예상 속도를 더 낮게 잡음
+                var bytesPerMs = file.type.indexOf('video/') === 0 ? 300 : 2000; // 영상 ~300KB/s, 사진 ~2MB/s 가정
+                var estimatedMs = Math.max(500, payload.length / bytesPerMs);
                 var start = Date.now();
                 var timer = setInterval(function() {
-                    var pct = Math.min(0.92, (Date.now() - start) / estimatedMs);
+                    // 예상 시간을 넘겨도 진행률이 멈춰 보이지 않도록 점근적으로 계속 증가시킴 (완료 시 실제로 100% 처리)
+                    var ratio = (Date.now() - start) / estimatedMs;
+                    var pct = Math.min(0.99, 1 - Math.exp(-ratio));
                     onProgress(Math.round(pct * file.size));
                 }, 150);
 
@@ -1333,8 +1337,9 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                 }
             }
 
-            files.forEach(function(file, i) {
-                uploadFileWithProgress(file, function(loaded) {
+            function uploadOne(i) {
+                var file = files[i];
+                return uploadFileWithProgress(file, function(loaded) {
                     loadedBytes[i] = loaded;
                     updateProgress();
                 }).then(function() {
@@ -1345,7 +1350,18 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                     failed++;
                     checkDone();
                 });
-            });
+            }
+
+            // 여러 개(특히 영상)를 한꺼번에 올리면 모바일 업로드 대역폭을 서로 나눠 쓰게 되어
+            // 개별 파일 완료가 오히려 늦어지므로, 동시 업로드 개수를 제한해서 순차적으로 처리
+            var MAX_CONCURRENT = 2;
+            var nextIndex = 0;
+            function startNext() {
+                if (nextIndex >= files.length) return;
+                var i = nextIndex++;
+                uploadOne(i).then(startNext);
+            }
+            for (var c = 0; c < Math.min(MAX_CONCURRENT, files.length); c++) startNext();
         });
     }
 
