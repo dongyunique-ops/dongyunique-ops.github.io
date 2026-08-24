@@ -1259,42 +1259,32 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         });
     }
 
-    // 구글드라이브 업로드
-    // 주의: xhr.upload에 리스너를 달면 브라우저가 CORS 프리플라이트(OPTIONS)를 강제로 보내는데,
-    // 구글 앱스스크립트 웹앱은 OPTIONS 요청을 처리하지 못해 업로드 자체가 실패한다.
-    // 그래서 실제 바이트 진행률 대신, 파일 용량 기반 예상 속도로 진행률을 추정해서 보여준다.
+    // Cloudinary 직접 업로드 (base64 변환 없이 원본 바이트 그대로 전송 + 실제 업로드 진행률)
+    var CLOUDINARY_CLOUD_NAME = 'ix57tddv';
+    var CLOUDINARY_UPLOAD_PRESET = 'qm6ss8ul';
+    var CLOUDINARY_UPLOAD_URL = 'https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD_NAME + '/auto/upload';
+
     function uploadFileWithProgress(file, onProgress) {
         return new Promise(function(resolve, reject) {
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                var base64 = e.target.result.split(',')[1];
-                var payload = JSON.stringify({ type: 'photo', file: base64, filename: file.name, mimetype: file.type });
+            var formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
-                // 영상은 서버(앱스스크립트→드라이브 저장)쪽 처리가 사진보다 오래 걸리므로 예상 속도를 더 낮게 잡음
-                var bytesPerMs = file.type.indexOf('video/') === 0 ? 300 : 2000; // 영상 ~300KB/s, 사진 ~2MB/s 가정
-                var estimatedMs = Math.max(500, payload.length / bytesPerMs);
-                var start = Date.now();
-                var timer = setInterval(function() {
-                    // 예상 시간을 넘겨도 진행률이 멈춰 보이지 않도록 점근적으로 계속 증가시킴 (완료 시 실제로 100% 처리)
-                    var ratio = (Date.now() - start) / estimatedMs;
-                    var pct = Math.min(0.99, 1 - Math.exp(-ratio));
-                    onProgress(Math.round(pct * file.size));
-                }, 150);
-
-                fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: payload
-                }).then(function() {
-                    clearInterval(timer);
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', CLOUDINARY_UPLOAD_URL, true);
+            xhr.upload.onprogress = function(evt) {
+                if (evt.lengthComputable) onProgress(evt.loaded);
+            };
+            xhr.onload = function() {
+                if (xhr.status >= 200 && xhr.status < 300) {
                     onProgress(file.size);
                     resolve();
-                }).catch(function() {
-                    clearInterval(timer);
+                } else {
                     reject();
-                });
+                }
             };
-            reader.onerror = function() { reject(); };
-            reader.readAsDataURL(file);
+            xhr.onerror = function() { reject(); };
+            xhr.send(formData);
         });
     }
 
