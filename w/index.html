@@ -193,7 +193,6 @@ section {
     padding: 0;
     position: relative;
     height: 100vh;
-    height: 100svh;
     display: flex;
     align-items: flex-end;
     justify-content: center;
@@ -687,7 +686,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
     <!-- Main Content -->
     <main id="mainContent" style="opacity:0;visibility:hidden;transition:opacity 0.8s ease,visibility 0.8s ease;">
         <!-- Hero -->
-        <section class="hero">
+        <section class="hero" id="hero">
             <div class="inner fade-in">
                 <p class="hero-subtitle">DONGYUN &amp; HEEEUN</p>
                 <p class="hero-date">12. 12</p>
@@ -960,6 +959,18 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
     if (window.Kakao && !Kakao.isInitialized()) {
         Kakao.init('1b9581fd4ebc38cc9eeffb3f74e88047');
     }
+
+    // 히어로 배경 높이 고정 (모바일 주소창 접힘/펼침에 따라 스크롤 중 커지는 현상 방지)
+    (function() {
+        var hero = document.getElementById('hero');
+        function lockHeroHeight() {
+            hero.style.height = window.innerHeight + 'px';
+        }
+        lockHeroHeight();
+        window.addEventListener('orientationchange', function() {
+            setTimeout(lockHeroHeight, 300);
+        });
+    })();
 
     // 오프닝 하트 그리기 → 음악 시작 + 본문 표시
     var musicPlaying = false;
