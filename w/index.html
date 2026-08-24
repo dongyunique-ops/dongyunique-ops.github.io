@@ -681,7 +681,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
     <!-- Back Link -->
 
     <!-- Main Content -->
-    <main id="mainContent">
+    <main id="mainContent" style="opacity:0;visibility:hidden;transition:opacity 0.8s ease,visibility 0.8s ease;">
         <!-- Hero -->
         <section class="hero">
             <div class="inner fade-in">
@@ -883,6 +883,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
             <div class="inner fade-in">
                 <div class="section-title">GUEST SNAP</div>
                 <div class="snap-card">
+                    <img src="snap_photo.jpg" alt="스냅 사진" style="width:100%;border-radius:10px;margin-bottom:20px;">
                     <p style="text-align:center;font-size:15px;color:#444;margin-bottom:20px;">
                         📸 저희의 스냅 작가가 되어주세요! 📸
                     </p>
@@ -905,7 +906,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                         많은 참여 부탁드려요! 💖
                     </p>
                     <label class="snap-upload-btn" style="cursor:pointer;">
-                        📷 사진 및 영상 업로드
+                        📷 사진 및 영상 업로드 (12월 12일 OPEN)
                         <input type="file" id="snapFileInput" accept="image/*,video/*" multiple style="display:none;" onchange="uploadSnap(this)">
                     </label>
                     <p id="uploadStatus" style="text-align:center;font-size:12px;color:#888;margin-top:10px;"></p>
@@ -923,6 +924,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                     <button class="msg-submit" onclick="submitMessage()">남기기</button>
                 </div>
                 <div class="msg-list" id="msgList"></div>
+                <button class="msg-show-all" id="msgShowAll" onclick="showAllMessages()" style="display:none;width:100%;padding:12px;margin-top:12px;background:none;border:1px solid #ddd;border-radius:10px;font-size:13px;color:#666;cursor:pointer;">전체 방명록 보기</button>
             </div>
         </section>
 
@@ -966,7 +968,9 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         started = true;
         
         document.getElementById('opening').classList.add('hide');
-        document.getElementById('mainContent').classList.add('show');
+        var main = document.getElementById('mainContent');
+        main.style.opacity = '1';
+        main.style.visibility = 'visible';
         document.getElementById('musicBtn').style.display = 'flex';
         
         // Create audio fresh inside user gesture
@@ -1309,22 +1313,42 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
 
     // Guest Book (Google Sheets 연동)
     var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzPxdXX9e4CvXPW5FroXzAGBOylhqG1GoYWZ722EotcZkG00TXN9kunw-3kZ3U1oOSK7Q/exec';
+    var allMessages = [];
+    var showingAll = false;
 
     function renderMessages() {
         const list = document.getElementById('msgList');
         fetch(SCRIPT_URL)
             .then(res => res.json())
             .then(msgs => {
-                list.innerHTML = msgs.map(m => `
-                    <div class="msg-item">
-                        <div class="msg-item-header">
-                            <span class="msg-item-name">${escapeHtml(m.name)}</span>
-                            <span class="msg-item-date">${escapeHtml(m.date)}</span>
-                        </div>
-                        <p class="msg-item-text">${escapeHtml(m.text)}</p>
-                    </div>
-                `).join('');
+                allMessages = msgs;
+                displayMessages(false);
             }).catch(() => { list.innerHTML = ''; });
+    }
+
+    function displayMessages(all) {
+        const list = document.getElementById('msgList');
+        const btn = document.getElementById('msgShowAll');
+        const toShow = all ? allMessages : allMessages.slice(0, 4);
+        list.innerHTML = toShow.map(m => `
+            <div class="msg-item">
+                <div class="msg-item-header">
+                    <span class="msg-item-name">${escapeHtml(m.name)}</span>
+                    <span class="msg-item-date">${escapeHtml(m.date)}</span>
+                </div>
+                <p class="msg-item-text">${escapeHtml(m.text)}</p>
+            </div>
+        `).join('');
+        if (allMessages.length > 4 && !all) {
+            btn.style.display = 'block';
+            btn.textContent = '전체 방명록 보기 (' + allMessages.length + '개)';
+        } else {
+            btn.style.display = 'none';
+        }
+    }
+
+    function showAllMessages() {
+        displayMessages(true);
     }
 
     function submitMessage() {
@@ -1339,17 +1363,18 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         const now = new Date();
         const date = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
         
+        // 즉시 화면에 표시 (낙관적 업데이트)
+        allMessages.unshift({ name, text, date });
+        displayMessages(false);
+        nameEl.value = '';
+        textEl.value = '';
+        showToast('메시지가 등록되었습니다');
+
+        // 서버에 저장
         fetch(SCRIPT_URL, {
             method: 'POST',
             body: JSON.stringify({ type: 'message', name, text, date })
-        }).then(() => {
-            nameEl.value = '';
-            textEl.value = '';
-            showToast('메시지가 등록되었습니다');
-            renderMessages();
-        }).catch(() => {
-            showToast('전송 실패. 다시 시도해주세요.');
-        });
+        }).catch(() => {});
     }
 
     // Init messages
