@@ -1117,7 +1117,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
             lastPos = pos;
 
             var progress = checkSegment(pos.x, pos.y);
-            if (progress >= 0.85) {
+            if (progress > 0.7) {
                 drawing = false;
                 startWedding();
             }
