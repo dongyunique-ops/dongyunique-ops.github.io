@@ -1029,6 +1029,18 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
             document.getElementById('musicBtn').classList.add('playing');
         }).catch(function(e) {
             console.log('play error:', e);
+            // QR스캐너 앱 등 일부 인앱 브라우저는 하트 그리기(터치 드래그) 제스처를
+            // 재생 허용 신호로 인식하지 못해 여기서 막힐 수 있음 → 다음 탭에서 재생 재시도
+            function retryPlay() {
+                document.removeEventListener('touchend', retryPlay);
+                document.removeEventListener('click', retryPlay);
+                audio.play().then(function() {
+                    musicPlaying = true;
+                    document.getElementById('musicBtn').classList.add('playing');
+                }).catch(function() {});
+            }
+            document.addEventListener('touchend', retryPlay, { once: true });
+            document.addEventListener('click', retryPlay, { once: true });
         });
     }
 
