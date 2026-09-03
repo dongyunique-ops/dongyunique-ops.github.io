@@ -1049,6 +1049,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                         사진 업로드 (12월 12일 OPEN)
                         <input type="file" id="snapFileInput" accept="image/*,video/*" multiple style="display:none;" onchange="uploadSnap(this)">
                     </label>
+                    <p style="text-align:center;font-size:11px;color:#bbb;margin-top:8px;">*용량이 큰 영상은 카톡으로 보내주세요 ㅎㅎㅎ*</p>
                     <p id="uploadStatus" style="text-align:center;font-size:12px;color:#888;margin-top:10px;"></p>
                     <div class="upload-progress-wrap" id="uploadProgressWrap">
                         <div class="upload-progress-bar"><div class="upload-progress-fill" id="uploadProgressFill"></div></div>
@@ -1138,8 +1139,8 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                 <div class="section-title">MESSAGE</div>
                 <p class="gallery-subtitle">축하의 말씀을 남겨주세요</p>
                 <div class="msg-form">
-                    <label class="msg-label" for="msg-name">성함</label>
-                    <input type="text" id="msg-name" maxlength="20" autocomplete="off">
+                    <label class="msg-label" for="msg-author">성함</label>
+                    <input type="text" id="msg-author" maxlength="20" autocomplete="off">
                     <label class="msg-label" for="msg-text">내용</label>
                     <textarea id="msg-text" maxlength="200"></textarea>
                     <label class="msg-label" for="msg-password">비밀번호</label>
@@ -1886,7 +1887,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
     }
 
     function submitMessage() {
-        const nameEl = document.getElementById('msg-name');
+        const nameEl = document.getElementById('msg-author');
         const textEl = document.getElementById('msg-text');
         const pwEl = document.getElementById('msg-password');
         const name = nameEl.value.trim();
