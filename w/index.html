@@ -275,16 +275,14 @@ section {
     30% { transform: translateY(-6px); }
 }
 .rainbow-date {
-    background: linear-gradient(90deg, #ff9a9e, #fad0c4, #fbc2eb, #a6c1ee, #a1c4fd, #d4a5f5, #ff9a9e);
-    background-size: 300% auto;
+    display: inline-block;
+    background: linear-gradient(90deg, #ff6b6b, #ffb86b, #ffe66b, #6bcf7f, #6ba8ff, #b06bff, #ff6b6b);
+    background-size: 400% 100%;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     color: transparent;
-    animation: rainbowFlow 6s linear infinite;
-}
-@keyframes rainbowFlow {
-    to { background-position: -300% center; }
+    animation: rainbowShine 5s linear infinite;
 }
 .music-btn.muted::after {
     content: '';
