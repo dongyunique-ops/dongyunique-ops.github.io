@@ -552,6 +552,16 @@ section {
     text-align: left;
     margin-top: 24px;
 }
+.snap-highlight {
+    display: inline-block;
+    color: #7d9a6b;
+    font-weight: 600;
+    animation: snapBounce 1.6s ease-in-out infinite;
+}
+@keyframes snapBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
 .snap-card .snap-notice {
     font-size: 13px;
     color: #888;
@@ -962,7 +972,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                 <div class="snap-card">
                     <img src="snap_photo.jpg" alt="스냅 사진" style="width:100%;border-radius:10px;margin-bottom:20px;">
                     <p style="text-align:center;font-size:15px;color:#444;margin-bottom:20px;">
-                        📸 저희의 스냅 작가가 되어주세요! 📸
+                        📸 <span class="snap-highlight">저희의 스냅 작가가 되어주세요!</span> 📸
                     </p>
                     <p style="text-align:center;font-size:13px;color:#666;line-height:2.2;">
                         [미션! 이 순간들을 놓치지 마세요!]<br>
