@@ -1139,9 +1139,9 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                 <p class="gallery-subtitle">축하의 말씀을 남겨주세요</p>
                 <div class="msg-form">
                     <label class="msg-label" for="msg-author">성함</label>
-                    <input type="text" id="msg-author" autocomplete="off">
+                    <input type="text" id="msg-author" maxlength="20" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" lang="ko">
                     <label class="msg-label" for="msg-text">내용</label>
-                    <textarea id="msg-text" maxlength="200"></textarea>
+                    <textarea id="msg-text" maxlength="200" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" lang="ko"></textarea>
                     <label class="msg-label" for="msg-password">비밀번호</label>
                     <input type="password" id="msg-password" placeholder="비밀번호 입력 (수정·삭제 시 필요해요)" maxlength="20" autocomplete="off">
                     <button class="msg-submit" onclick="submitMessage()">작성</button>
