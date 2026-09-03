@@ -1547,7 +1547,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                     <span class="msg-item-date">${escapeHtml(m.date)}</span>
                 </div>
                 <p class="msg-item-text">${escapeHtml(m.text)}</p>
-                <button onclick="editMessage(${i})" style="background:none;border:none;color:#aaa;font-size:11px;cursor:pointer;margin-top:4px;">수정</button>
+                ${localStorage.getItem(msgKey(m)) ? '<button onclick="editMessage('+i+')" style="background:none;border:none;color:#aaa;font-size:11px;cursor:pointer;margin-top:4px;">수정</button>' : ''}
             </div>
         `).join('');
         if (allMessages.length > 4) {
