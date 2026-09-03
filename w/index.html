@@ -420,8 +420,8 @@ section {
     color: #222;
     cursor: pointer;
 }
-.account-toggle[data-target="groom"] span:first-child { color: #4a7ab5; }
-.account-toggle[data-target="bride"] span:first-child { color: #c75050; }
+.account-toggle[data-target="groom"] span:first-child { color: #7089a6; }
+.account-toggle[data-target="bride"] span:first-child { color: #bd7c86; }
 .account-chevron { color: #999; font-size: 13px; transition: transform 0.25s ease; }
 .account-toggle.open .account-chevron { transform: rotate(180deg); }
 .account-panel {
@@ -1082,8 +1082,8 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         setTimeout(resizeCanvas, 100);
         window.addEventListener('resize', resizeCanvas);
 
-        // 하트 경로를 20개 구간으로 나눔
-        var segments = 20;
+        // 하트 경로를 40개 구간으로 나눔 (구간을 촘촘히 해서 대충 그려도 통과되는 것을 방지)
+        var segments = 40;
         var segmentHit = new Array(segments).fill(false);
 
         function getHeartPoint(t) {
@@ -1099,7 +1099,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         }
 
         function checkSegment(px, py) {
-            var hitDist = 30;
+            var hitDist = 12;
             for (var i = 0; i < segments; i++) {
                 if (segmentHit[i]) continue;
                 var t = (i / segments) * Math.PI * 2;
@@ -1152,7 +1152,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
             lastPos = pos;
 
             var progress = checkSegment(pos.x, pos.y);
-            if (progress >= 0.8) {
+            if (progress >= 0.85) {
                 drawing = false;
                 startWedding();
             }
