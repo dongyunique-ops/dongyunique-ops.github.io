@@ -183,7 +183,7 @@ section {
     transition: all 0.2s;
 }
 .music-btn:hover { background: #f0f0f0; }
-.music-btn.playing { animation: spin 3s linear infinite; border-color: #7d9a6b; }
+.music-btn.playing { animation: spin 3s linear infinite; border-color: #e0a3b4; }
 .music-btn.muted::after {
     content: '';
     position: absolute;
@@ -191,7 +191,7 @@ section {
     left: 50%;
     width: 26px;
     height: 1.5px;
-    background: #7d9a6b;
+    background: #e0a3b4;
     transform: translate(-50%, -50%) rotate(-45deg);
 }
 @keyframes spin {
@@ -296,7 +296,7 @@ section {
 .calendar-grid .day-cell.sun { color: #c75050; }
 .calendar-grid .day-cell.sat { color: #4a7ab5; }
 .calendar-grid .day-cell.wedding {
-    background: #7d9a6b;
+    background: #e0a3b4;
     color: #fff;
     font-weight: 600;
     border-radius: 50%;
@@ -513,7 +513,7 @@ section {
 .snap-reward {
     margin-top: 16px;
     font-size: 13px;
-    color: #7d9a6b;
+    color: #e0a3b4;
     text-align: center;
     font-weight: 500;
 }
@@ -522,7 +522,7 @@ section {
     width: 100%;
     margin-top: 20px;
     padding: 14px;
-    background: #7d9a6b;
+    background: #e0a3b4;
     color: #fff;
     border: none;
     border-radius: 12px;
@@ -531,7 +531,7 @@ section {
     font-weight: 500;
     text-align: center;
 }
-.snap-upload-btn:hover { background: #6b8a5a; }
+.snap-upload-btn:hover { background: #d18fa2; }
 .upload-progress-wrap {
     display: none;
     margin-top: 14px;
@@ -546,7 +546,7 @@ section {
 .upload-progress-fill {
     height: 100%;
     width: 0%;
-    background: #7d9a6b;
+    background: #e0a3b4;
     border-radius: 4px;
     transition: width 0.2s ease;
 }
@@ -580,7 +580,7 @@ section {
 .msg-submit {
     width: 100%;
     padding: 16px;
-    background: #7d9a6b;
+    background: #e0a3b4;
     color: #fff;
     border: none;
     border-radius: 14px;
@@ -588,7 +588,7 @@ section {
     cursor: pointer;
     font-weight: 500;
 }
-.msg-submit:hover { background: #6b8a5a; }
+.msg-submit:hover { background: #d18fa2; }
 .msg-list { display: flex; flex-direction: column; gap: 12px; }
 .msg-item {
     background: #f8f8f8;
@@ -618,7 +618,7 @@ section {
     text-align: center;
 }
 .share-kakao { background: #f5eda0; color: #333; }
-.share-copy { background: #7d9a6b; color: #fff; }
+.share-copy { background: #e0a3b4; color: #fff; }
 .share-btn:hover { opacity: 0.9; }
 
 /* Footer */
@@ -727,7 +727,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
 </head>
 <body>
     <!-- Opening Animation -->
-    <div class="opening" id="opening">
+    <div class="opening" id="opening" style="visibility:hidden;">
         <div class="opening-bg-img"></div>
         <div class="opening-overlay"></div>
         <!-- Heart outline SVG -->
@@ -1054,6 +1054,19 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
     if (window.Kakao && !Kakao.isInitialized()) {
         Kakao.init('1b9581fd4ebc38cc9eeffb3f74e88047');
     }
+
+    // 오프닝 배경 사진(cover.jpg)이 완전히 로드된 뒤에만 오프닝 화면을 보여줌.
+    // 그 전에 미리 보여주면 사진이 뜨기 전 회색 플레이스홀더 + 어두운 오버레이가
+    // 겹쳐서 잠깐 검은 화면처럼 보였다가 사진이 나오는 것처럼 느껴짐.
+    (function() {
+        var opening = document.getElementById('opening');
+        function reveal() { opening.style.visibility = 'visible'; }
+        var img = new Image();
+        img.onload = reveal;
+        img.onerror = reveal;
+        img.src = 'cover.jpg';
+        if (img.complete) reveal();
+    })();
 
     // 히어로 배경 높이 고정 (모바일 주소창 접힘/펼침에 따라 스크롤 중 커지는 현상 방지)
     (function() {
@@ -1446,7 +1459,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
             '<p style="font-size:40px;margin-bottom:16px;">📸</p>' +
             '<p style="font-size:18px;font-weight:600;color:#333;margin-bottom:8px;">작가님 감사합니다!</p>' +
             '<p style="font-size:14px;color:#888;margin-bottom:24px;">' + count + '개 파일이 업로드 되었습니다</p>' +
-            '<button onclick="this.closest(\'div\').parentElement.remove()" style="padding:12px 32px;background:#7d9a6b;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer;">확인</button>' +
+            '<button onclick="this.closest(\'div\').parentElement.remove()" style="padding:12px 32px;background:#e0a3b4;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer;">확인</button>' +
             '</div>';
         document.body.appendChild(overlay);
     }
