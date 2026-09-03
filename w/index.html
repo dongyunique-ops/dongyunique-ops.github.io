@@ -1900,12 +1900,22 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                 showToast('비밀번호가 일치하지 않습니다');
                 return;
             }
-            openModal('메시지 수정', false, m.text).then(function(newText) {
-                if (newText !== null && newText.trim() !== '') {
-                    allMessages[index].text = newText.trim();
+            openModal('성함 수정', false, m.name).then(function(newName) {
+                if (newName === null || newName.trim() === '') return;
+                openModal('메시지 수정', false, m.text).then(function(newText) {
+                    if (newText === null || newText.trim() === '') return;
+                    var trimmedName = newName.trim();
+                    var trimmedText = newText.trim();
+                    // 이름이 바뀌면 비밀번호 저장 키도 새 이름 기준으로 옮겨줌
+                    if (trimmedName !== m.name) {
+                        localStorage.removeItem(msgKey(m));
+                        localStorage.setItem(msgKey({ name: trimmedName, date: m.date }), savedPw);
+                    }
+                    allMessages[index].name = trimmedName;
+                    allMessages[index].text = trimmedText;
                     displayMessages(false);
                     showToast('수정되었습니다');
-                }
+                });
             });
         });
     }
