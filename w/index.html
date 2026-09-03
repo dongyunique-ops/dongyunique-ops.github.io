@@ -2,6 +2,21 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <script>
+    // 카카오톡 인앱 브라우저는 일부 입력창에서 한글 입력이 씹히는 알려진 버그가 있어,
+    // 카카오톡 안에서 열렸으면 즉시 기기 기본 브라우저로 넘겨서 열어줌
+    (function() {
+        var ua = navigator.userAgent || '';
+        if (/KAKAOTALK/i.test(ua)) {
+            var url = location.href;
+            if (/android/i.test(ua)) {
+                location.href = 'intent://' + url.replace(/^https?:\/\//i, '') + '#Intent;scheme=https;package=com.android.chrome;end';
+            } else if (/iphone|ipad|ipod/i.test(ua)) {
+                location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(url);
+            }
+        }
+    })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>동윤 ♥ 희은 결혼합니다</title>
     <meta name="description" content="2026년 12월 12일 토요일 오후 2시, 엘로라 인 가든">
