@@ -184,6 +184,45 @@ section {
 }
 .music-btn:hover { background: #f0f0f0; }
 .music-btn.playing { animation: spin 3s linear infinite; border-color: #e0a3b4; }
+.custom-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 10003;
+    align-items: center;
+    justify-content: center;
+}
+.custom-modal.show { display: flex; }
+.custom-modal-box {
+    background: #fff;
+    border-radius: 14px;
+    padding: 28px 24px;
+    width: 280px;
+    max-width: 85%;
+}
+.custom-modal-title { font-size: 15px; color: #333; margin-bottom: 16px; text-align: center; }
+.custom-modal-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-bottom: 20px;
+    outline: none;
+}
+.custom-modal-input:focus { border-color: #e0a3b4; }
+.custom-modal-btns { display: flex; gap: 10px; }
+.custom-modal-cancel, .custom-modal-ok {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+}
+.custom-modal-cancel { background: #f0f0f0; color: #666; }
+.custom-modal-ok { background: #e0a3b4; color: #fff; }
 .music-btn.muted::after {
     content: '';
     position: absolute;
@@ -1647,21 +1686,42 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         }
     }
 
+    // 커스텀 모달 (브라우저 prompt 대체 - 주소 안 뜨게)
+    var modalResolve = null;
+    function openModal(title, isPassword, defaultValue) {
+        return new Promise(function(resolve) {
+            modalResolve = resolve;
+            document.getElementById('modalTitle').textContent = title;
+            var input = document.getElementById('modalInput');
+            input.type = isPassword ? 'password' : 'text';
+            input.value = defaultValue || '';
+            document.getElementById('customModal').classList.add('show');
+            setTimeout(function() { input.focus(); }, 100);
+        });
+    }
+    function closeModal(ok) {
+        var val = ok ? document.getElementById('modalInput').value : null;
+        document.getElementById('customModal').classList.remove('show');
+        if (modalResolve) { modalResolve(val); modalResolve = null; }
+    }
+
     function editMessage(index) {
         var m = allMessages[index];
-        var inputPw = prompt('비밀번호를 입력해주세요');
-        if (inputPw === null) return;
-        var savedPw = localStorage.getItem(msgKey(m));
-        if (!savedPw || inputPw !== savedPw) {
-            showToast('비밀번호가 일치하지 않습니다');
-            return;
-        }
-        var newText = prompt('메시지 수정:', m.text);
-        if (newText !== null && newText.trim() !== '') {
-            allMessages[index].text = newText.trim();
-            displayMessages(false);
-            showToast('수정되었습니다');
-        }
+        openModal('비밀번호를 입력해주세요', true, '').then(function(inputPw) {
+            if (inputPw === null) return;
+            var savedPw = localStorage.getItem(msgKey(m));
+            if (!savedPw || inputPw !== savedPw) {
+                showToast('비밀번호가 일치하지 않습니다');
+                return;
+            }
+            openModal('메시지 수정', false, m.text).then(function(newText) {
+                if (newText !== null && newText.trim() !== '') {
+                    allMessages[index].text = newText.trim();
+                    displayMessages(false);
+                    showToast('수정되었습니다');
+                }
+            });
+        });
     }
 
     function showAllMessages() {
