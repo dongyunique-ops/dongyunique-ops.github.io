@@ -403,24 +403,30 @@ section {
 }
 /* Account */
 .account-subtitle { font-size: 13px; color: #888; line-height: 1.8; margin-bottom: 24px; }
-.tab-buttons {
+.account-accordion { text-align: left; }
+.account-toggle {
+    width: 100%;
     display: flex;
-    justify-content: center;
-    gap: 0;
-    margin-bottom: 24px;
-    border-bottom: 1px solid #eee;
-}
-.tab-btn {
-    padding: 12px 24px;
-    font-size: 14px;
-    color: #888;
-    background: none;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    margin-bottom: 10px;
+    background: #f8f8f8;
     border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #222;
     cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: all 0.2s;
 }
-.tab-btn.active { color: #222; border-bottom-color: #7d9a6b; }
+.account-chevron { color: #888; font-size: 13px; transition: transform 0.25s ease; }
+.account-toggle.open .account-chevron { transform: rotate(180deg); }
+.account-panel {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+.account-panel-inner { padding-bottom: 4px; }
 .account-card {
     background: #3d3d3d;
     border-radius: 12px;
@@ -451,8 +457,6 @@ section {
     padding: 4px 8px;
 }
 .account-copy:hover { color: #fff; }
-.tab-content { display: none; }
-.tab-content.active { display: block; }
 /* Guest Snap */
 .snap-card {
     background: #f8f8f8;
@@ -806,6 +810,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                     <div class="gallery-item" onclick="openPhoto('photo1.jpg')"><img src="photo1.jpg" alt="웨딩 사진 1" style="width:100%;height:100%;object-fit:cover;"></div>
                     <div class="gallery-item" onclick="openPhoto('photo2.jpg')"><img src="photo2.jpg" alt="웨딩 사진 2" style="width:100%;height:100%;object-fit:cover;"></div>
                     <div class="gallery-item" onclick="openPhoto('photo3.jpg')"><img src="photo3.jpg" alt="웨딩 사진 3" style="width:100%;height:100%;object-fit:cover;"></div>
+                    <div class="gallery-item" onclick="openPhoto('photo4.jpg')"><img src="photo4.jpg" alt="웨딩 사진 4" style="width:100%;height:100%;object-fit:cover;"></div>
                 </div>
             </div>
         </section>
@@ -847,61 +852,71 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
             <div class="inner fade-in">
                 <div class="section-title">ACCOUNT</div>
                 <p class="account-subtitle">참석이 어려우신 분들을 위해 기재했습니다<br>너그러운 마음으로 양해 부탁드립니다</p>
-                <div class="tab-buttons">
-                    <button class="tab-btn active" data-tab="groom">신랑측에게</button>
-                    <button class="tab-btn" data-tab="bride">신부측에게</button>
-                </div>
-                <div class="tab-content active" id="tab-groom">
-                    <div class="account-card">
-                        <div class="account-top">
-                            <span class="account-role">신랑</span>
-                            <span class="account-name">김동윤</span>
-                        </div>
-                        <div class="account-bottom">
-                            <span class="account-number">국민은행 000-000-00-000000</span>
-                            <button class="account-copy" onclick="copyText('000-000-00-000000')" aria-label="계좌번호 복사">📋</button>
-                        </div>
-                    </div>
-                    <div class="account-card">
-                        <div class="account-top">
-                            <span class="account-role">신랑 아버지</span>
-                            <span class="account-name">김승순</span>
-                        </div>
-                        <div class="account-bottom">
-                            <span class="account-number">우리은행 000-000-000000</span>
-                            <button class="account-copy" onclick="copyText('000-000-000000')" aria-label="계좌번호 복사">📋</button>
-                        </div>
-                    </div>
-                    <div class="account-card">
-                        <div class="account-top">
-                            <span class="account-role">신랑 어머니</span>
-                            <span class="account-name">박난옥</span>
-                        </div>
-                        <div class="account-bottom">
-                            <span class="account-number">신한은행 000-000-000000</span>
-                            <button class="account-copy" onclick="copyText('000-000-000000')" aria-label="계좌번호 복사">📋</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="tab-content" id="tab-bride">
-                    <div class="account-card">
-                        <div class="account-top">
-                            <span class="account-role">신부</span>
-                            <span class="account-name">김희은</span>
-                        </div>
-                        <div class="account-bottom">
-                            <span class="account-number">신한은행 000-000-000000</span>
-                            <button class="account-copy" onclick="copyText('000-000-000000')" aria-label="계좌번호 복사">📋</button>
+                <div class="account-accordion">
+                    <button class="account-toggle" data-target="groom">
+                        <span>신랑측</span>
+                        <span class="account-chevron">⌄</span>
+                    </button>
+                    <div class="account-panel" id="panel-groom">
+                        <div class="account-panel-inner">
+                            <div class="account-card">
+                                <div class="account-top">
+                                    <span class="account-role">신랑</span>
+                                    <span class="account-name">김동윤</span>
+                                </div>
+                                <div class="account-bottom">
+                                    <span class="account-number">국민은행 000-000-00-000000</span>
+                                    <button class="account-copy" onclick="copyText('000-000-00-000000')" aria-label="계좌번호 복사">📋</button>
+                                </div>
+                            </div>
+                            <div class="account-card">
+                                <div class="account-top">
+                                    <span class="account-role">신랑 아버지</span>
+                                    <span class="account-name">김승순</span>
+                                </div>
+                                <div class="account-bottom">
+                                    <span class="account-number">우리은행 000-000-000000</span>
+                                    <button class="account-copy" onclick="copyText('000-000-000000')" aria-label="계좌번호 복사">📋</button>
+                                </div>
+                            </div>
+                            <div class="account-card">
+                                <div class="account-top">
+                                    <span class="account-role">신랑 어머니</span>
+                                    <span class="account-name">박난옥</span>
+                                </div>
+                                <div class="account-bottom">
+                                    <span class="account-number">신한은행 000-000-000000</span>
+                                    <button class="account-copy" onclick="copyText('000-000-000000')" aria-label="계좌번호 복사">📋</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="account-card">
-                        <div class="account-top">
-                            <span class="account-role">신부 어머니</span>
-                            <span class="account-name">장경주</span>
-                        </div>
-                        <div class="account-bottom">
-                            <span class="account-number">농협은행 000-000-000000</span>
-                            <button class="account-copy" onclick="copyText('000-000-000000')" aria-label="계좌번호 복사">📋</button>
+                    <button class="account-toggle" data-target="bride">
+                        <span>신부측</span>
+                        <span class="account-chevron">⌄</span>
+                    </button>
+                    <div class="account-panel" id="panel-bride">
+                        <div class="account-panel-inner">
+                            <div class="account-card">
+                                <div class="account-top">
+                                    <span class="account-role">신부</span>
+                                    <span class="account-name">김희은</span>
+                                </div>
+                                <div class="account-bottom">
+                                    <span class="account-number">신한은행 000-000-000000</span>
+                                    <button class="account-copy" onclick="copyText('000-000-000000')" aria-label="계좌번호 복사">📋</button>
+                                </div>
+                            </div>
+                            <div class="account-card">
+                                <div class="account-top">
+                                    <span class="account-role">신부 어머니</span>
+                                    <span class="account-name">장경주</span>
+                                </div>
+                                <div class="account-bottom">
+                                    <span class="account-number">농협은행 000-000-000000</span>
+                                    <button class="account-copy" onclick="copyText('000-000-000000')" aria-label="계좌번호 복사">📋</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1175,7 +1190,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
     });
 
     // 사진 라이트박스 + 스와이프
-    var photos = ['photo1.jpg', 'photo2.jpg', 'photo3.jpg'];
+    var photos = ['photo1.jpg', 'photo2.jpg', 'photo3.jpg', 'photo4.jpg'];
     var currentPhoto = 0;
     var touchStartX = 0;
     var touchEndX = 0;
@@ -1455,13 +1470,18 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
     updateCountdown();
     setInterval(updateCountdown, 1000);
 
-    // Tab switching
-    document.querySelectorAll('.tab-btn').forEach(btn => {
+    // 계좌번호 아코디언 (눌러야 펼쳐짐)
+    document.querySelectorAll('.account-toggle').forEach(btn => {
         btn.addEventListener('click', () => {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+            const panel = document.getElementById('panel-' + btn.dataset.target);
+            const isOpen = btn.classList.contains('open');
+            if (isOpen) {
+                panel.style.maxHeight = '0px';
+                btn.classList.remove('open');
+            } else {
+                panel.style.maxHeight = panel.scrollHeight + 'px';
+                btn.classList.add('open');
+            }
         });
     });
 
