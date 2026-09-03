@@ -274,6 +274,18 @@ section {
     0%, 60%, 100% { transform: translateY(0); }
     30% { transform: translateY(-6px); }
 }
+.rainbow-date {
+    background: linear-gradient(90deg, #ff9a9e, #fad0c4, #fbc2eb, #a6c1ee, #a1c4fd, #d4a5f5, #ff9a9e);
+    background-size: 300% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: rainbowFlow 6s linear infinite;
+}
+@keyframes rainbowFlow {
+    to { background-position: -300% center; }
+}
 .music-btn.muted::after {
     content: '';
     position: absolute;
@@ -871,7 +883,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         <section class="hero" id="hero">
             <div class="inner fade-in">
                 <p class="hero-subtitle">DONGYUN &amp; HEEEUN</p>
-                <p class="hero-date">12. 12</p>
+                <p class="hero-date rainbow-date">12. 12</p>
                 <p class="hero-info">2026년 12월 12일 토요일 | 오후 2시</p>
                 <p class="hero-venue">엘로라 인 가든</p>
             </div>
