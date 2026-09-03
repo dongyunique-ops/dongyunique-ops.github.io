@@ -114,21 +114,18 @@ section {
     z-index: 2;
 }
 .opening-text p {
-    opacity: 0;
-    animation: fadeUp 0.8s ease forwards;
     pointer-events: none;
     color: #fff;
     text-shadow: 0 1px 8px rgba(0,0,0,0.3);
 }
-.opening-text .op-line1 { animation-delay: 0.3s; font-size: 16px; font-weight: 300; letter-spacing: 2px; }
-.opening-text .op-names { animation-delay: 1.0s; font-size: 28px; font-weight: 600; letter-spacing: 3px; }
-.opening-text .op-date { animation-delay: 1.7s; font-size: 13px; font-weight: 300; letter-spacing: 2px; color: rgba(255,255,255,0.85); }
+.opening-text .op-line1 { font-size: 16px; font-weight: 300; letter-spacing: 2px; }
+.opening-text .op-names { font-size: 28px; font-weight: 600; letter-spacing: 3px; }
+.opening-text .op-date { font-size: 13px; font-weight: 300; letter-spacing: 2px; color: rgba(255,255,255,0.85); }
 .opening-text .op-tap {
-    animation-delay: 2.5s;
     font-size: 12px;
     color: rgba(255,255,255,0.7);
     margin-top: 30px;
-    animation: fadeUp 0.8s ease 2.5s forwards, pulse 2s ease-in-out 3.3s infinite;
+    animation: pulse 2s ease-in-out infinite;
 }
 .opening-heart-svg {
     position: absolute;
@@ -187,10 +184,6 @@ section {
 @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
-}
-@keyframes fadeUp {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
 }
 /* Hero */
 .hero {
@@ -456,12 +449,13 @@ section {
 }
 .account-top {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
+    gap: 8px;
     margin-bottom: 8px;
 }
 .account-role { font-size: 14px; color: #7a94ad; font-weight: 500; }
-.account-name { font-size: 14px; color: #333; font-weight: 400; }
+.account-name { font-size: 14px; color: #333; font-weight: 500; }
 .account-bottom {
     display: flex;
     justify-content: space-between;
@@ -1533,7 +1527,16 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
             }
         });
     }, { threshold: 0.15 });
-    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+    document.querySelectorAll('.fade-in').forEach(el => {
+        observer.observe(el);
+        // 트랜지션이 끝난 뒤에도 transform이 남아있으면 iOS 사파리에서 그 안의
+        // input에 처음 탭했을 때 포커스/입력이 씹히는 경우가 있어 완전히 제거해줌
+        el.addEventListener('transitionend', function(e) {
+            if (e.propertyName === 'transform') {
+                el.style.transform = 'none';
+            }
+        });
+    });
     // Escape HTML
     function escapeHtml(str) {
         const div = document.createElement('div');
