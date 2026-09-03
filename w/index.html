@@ -398,8 +398,25 @@ section {
     text-align: left;
     font-size: 13px;
     color: #666;
-    line-height: 2;
     margin-top: 24px;
+}
+.transport-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+.transport-row:last-child { border-bottom: none; }
+.transport-label {
+    flex-shrink: 0;
+    width: 72px;
+    color: #333;
+    font-weight: 500;
+}
+.transport-desc {
+    color: #666;
+    line-height: 1.6;
 }
 /* Account */
 .account-subtitle { font-size: 13px; color: #888; line-height: 1.8; margin-bottom: 24px; }
