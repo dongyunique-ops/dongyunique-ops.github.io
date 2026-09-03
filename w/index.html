@@ -640,6 +640,16 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
     opacity: 1;
     transform: translateY(0);
 }
+/* 방명록처럼 안에 입력창이 있는 섹션은 transform 트랜지션을 쓰지 않음 —
+   아이폰 사파리에서 transform이 걸린(트랜지션 중이거나 identity 값이라도 남아있는)
+   조상 안의 input을 탭하면 첫 글자 입력이 씹히는 문제가 있어 opacity만 사용 */
+.fade-in-no-transform {
+    transform: none;
+    transition: opacity 0.7s ease;
+}
+.fade-in-no-transform.visible {
+    transform: none;
+}
 
 /* Toast */
 .toast {
@@ -1007,7 +1017,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         </section>
         <!-- Message -->
         <section>
-            <div class="inner fade-in">
+            <div class="inner fade-in fade-in-no-transform">
                 <div class="section-title">MESSAGE</div>
                 <p class="gallery-subtitle">축하의 말씀을 남겨주세요</p>
                 <div class="msg-form">
