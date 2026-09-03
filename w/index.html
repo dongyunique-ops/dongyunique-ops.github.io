@@ -303,7 +303,36 @@ section {
     line-height: 2;
     text-align: center;
 }
-.parents-info .name { color: #222; font-weight: 500; }
+.parents-info .name {
+    font-weight: 500;
+    display: inline-block;
+    color: #222;
+    background: linear-gradient(90deg, #222 0%, #222 40%, #fff 50%, #222 60%, #222 100%);
+    background-size: 220% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: nameShine 3s ease-in-out infinite;
+}
+@keyframes nameShine {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+.rainbow-text {
+    display: inline-block;
+    background: linear-gradient(90deg, #ff6b6b, #ffb86b, #ffe66b, #6bcf7f, #6ba8ff, #b06bff, #ff6b6b);
+    background-size: 400% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: #444;
+    font-weight: 500;
+    animation: rainbowShine 5s linear infinite;
+}
+@keyframes rainbowShine {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 400% 50%; }
+}
 /* Calendar */
 .sec-calendar { background: #f8f8f8; }
 .cal-date-kr { font-size: 14px; color: #444; margin-bottom: 4px; }
@@ -817,7 +846,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                 <div class="section-title">INVITATION</div>
                 <p class="invitation-text" style="font-size:13px;line-height:2.4;">
                     서로의 일상을 특별하게 만들어주던 두 사람이<br>
-                    이제는 서로의 든든한 평생의 편이 되고자 합니다.<br><br>
+                    이제는 서로의 든든한 <span class="rainbow-text">평생의 편</span>이 되고자 합니다.<br><br>
                     저희 두 사람이 사랑의 이름으로 지켜나갈 수 있게<br>
                     축복해 주시면 감사하겠습니다.
                 </p>
@@ -1075,8 +1104,8 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
 
         <!-- Share -->
         <div class="share-buttons">
-            <button class="share-btn share-kakao" onclick="shareKakao()">카카오톡으로 청첩장 전하기</button>
             <button class="share-btn share-copy" onclick="copyUrl()">청첩장 주소 복사하기</button>
+            <button class="share-btn share-kakao" onclick="shareKakao()">카카오톡으로 청첩장 전하기</button>
         </div>
 
         <!-- Footer -->
