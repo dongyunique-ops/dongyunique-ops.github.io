@@ -672,7 +672,7 @@ section {
 }
 
 /* Message */
-.msg-form { margin-bottom: 32px; text-align: left; }
+.msg-form { margin-bottom: 32px; text-align: left; position: relative; z-index: 5; }
 .msg-label { display: block; font-size: 14px; color: #333; font-weight: 500; margin-bottom: 10px; }
 .msg-form input, .msg-form textarea {
     width: 100%;
@@ -685,6 +685,12 @@ section {
     background: #fff;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     transition: border-color 0.2s;
+    position: relative;
+    z-index: 5;
+    pointer-events: auto;
+    -webkit-user-select: text;
+    user-select: text;
+    touch-action: manipulation;
 }
 #msg-password::placeholder { font-size: 12px; color: #bbb; }
 .msg-form input:focus, .msg-form textarea:focus {
@@ -897,8 +903,8 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                     축복해 주시면 감사하겠습니다.
                 </p>
                 <div class="parents-info">
-                    <p>김승순 · 박난옥 의 귀염둥이 아들 <span class="name">동윤</span></p>
-                    <p><img src="flower.png" style="width:16px;height:auto;vertical-align:middle;margin-right:4px;">김현교 · 장경주 의 사랑스러운 딸 <span class="name">희은</span></p>
+                    <p>김승순 · 박난옥 의 아들 <span class="name">동윤</span></p>
+                    <p><img src="flower.png" style="width:16px;height:auto;vertical-align:middle;margin-right:4px;">김현교 · 장경주 의 딸 <span class="name">희은</span></p>
                 </div>
             </div>
         </section>
