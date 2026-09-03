@@ -260,15 +260,19 @@ section {
 @keyframes daysShine {
     to { background-position: -200% center; }
 }
-.mint-sparkle {
-    font-weight: 700;
-    background: linear-gradient(90deg, #3bb39a 0%, #5fd3b8 25%, #e8fff8 50%, #5fd3b8 75%, #3bb39a 100%);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-    animation: daysShine 2.5s linear infinite;
+.wave-text { display: inline-block; font-weight: 700; color: #3bb39a; }
+.wave-text span {
+    display: inline-block;
+    animation: waveBounce 1.4s ease-in-out infinite;
+}
+.wave-text span:nth-child(1) { animation-delay: 0s; }
+.wave-text span:nth-child(2) { animation-delay: 0.1s; }
+.wave-text span:nth-child(3) { animation-delay: 0.2s; }
+.wave-text span:nth-child(4) { animation-delay: 0.3s; }
+.wave-text span:nth-child(5) { animation-delay: 0.4s; }
+@keyframes waveBounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-6px); }
 }
 .music-btn.muted::after {
     content: '';
@@ -1023,7 +1027,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                     </p>
                     <p style="text-align:center;font-size:13px;color:#444;margin-top:24px;line-height:2;">
                         🎁 미션 수행자 중 가장 멋진 컷을<br>
-                        남겨주신 분께 <span class="mint-sparkle">배민 쿠폰</span>을 쏩니다!
+                        남겨주신 분께 <span class="wave-text"><span>배</span><span>민</span><span>&nbsp;</span><span>쿠</span><span>폰</span></span>을 쏩니다!
                     </p>
                     <p style="text-align:center;font-size:13px;color:#888;margin-top:20px;line-height:1.8;">
                         당일날, 아래 버튼을 통해 올려주세요!<br>
