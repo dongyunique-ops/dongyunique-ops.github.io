@@ -1107,7 +1107,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         }
 
         function checkSegment(px, py) {
-            var hitDist = 12;
+            var hitDist = 20;
             for (var i = 0; i < segments; i++) {
                 if (segmentHit[i]) continue;
                 var t = (i / segments) * Math.PI * 2;
@@ -1160,7 +1160,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
             lastPos = pos;
 
             var progress = checkSegment(pos.x, pos.y);
-            if (progress >= 0.85) {
+            if (progress >= 0.8) {
                 drawing = false;
                 startWedding();
             }
