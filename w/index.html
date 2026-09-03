@@ -1550,9 +1550,15 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                 <button onclick="editMessage(${i})" style="background:none;border:none;color:#aaa;font-size:11px;cursor:pointer;margin-top:4px;">수정</button>
             </div>
         `).join('');
-        if (allMessages.length > 4 && !all) {
+        if (allMessages.length > 4) {
             btn.style.display = 'block';
-            btn.textContent = '전체 방명록 보기 (' + allMessages.length + '개)';
+            if (all) {
+                btn.textContent = '접기';
+                btn.setAttribute('data-expanded', 'true');
+            } else {
+                btn.textContent = '전체 방명록 보기 (' + allMessages.length + '개)';
+                btn.setAttribute('data-expanded', 'false');
+            }
         } else {
             btn.style.display = 'none';
         }
@@ -1576,7 +1582,14 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
     }
 
     function showAllMessages() {
-        displayMessages(true);
+        var btn = document.getElementById('msgShowAll');
+        var expanded = btn.getAttribute('data-expanded') === 'true';
+        if (expanded) {
+            displayMessages(false);
+            document.getElementById('msgList').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            displayMessages(true);
+        }
     }
 
     function submitMessage() {
