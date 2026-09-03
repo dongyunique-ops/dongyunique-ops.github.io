@@ -225,16 +225,15 @@ section {
 .custom-modal-ok { background: #e0a3b4; color: #fff; }
 .snap-sparkle {
     font-weight: 600;
-    background: linear-gradient(90deg, #c98a9a 0%, #e0a3b4 25%, #fff0f4 50%, #e0a3b4 75%, #c98a9a 100%);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-    animation: sparkleShine 3s linear infinite;
+    color: #c98a9a;
+    animation: cameraFlash 2.5s ease-in-out infinite;
 }
-@keyframes sparkleShine {
-    to { background-position: -200% center; }
+@keyframes cameraFlash {
+    0%, 44%, 100% { color: #c98a9a; text-shadow: none; }
+    46% { color: #fff; text-shadow: 0 0 12px #fff, 0 0 20px #ffd6e0; }
+    48% { color: #c98a9a; text-shadow: none; }
+    50% { color: #fff; text-shadow: 0 0 12px #fff, 0 0 20px #ffd6e0; }
+    52% { color: #c98a9a; text-shadow: none; }
 }
 .snap-emoji-shine {
     display: inline-block;
