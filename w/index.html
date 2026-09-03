@@ -412,15 +412,17 @@ section {
     justify-content: space-between;
     padding: 16px 20px;
     margin-bottom: 10px;
-    background: #e7f0e2;
-    border: none;
+    background: #fff;
+    border: 1px solid #ddd;
     border-radius: 12px;
     font-size: 15px;
     font-weight: 500;
     color: #222;
     cursor: pointer;
 }
-.account-chevron { color: #6b8a5a; font-size: 13px; transition: transform 0.25s ease; }
+.account-toggle[data-target="groom"] span:first-child { color: #4a7ab5; }
+.account-toggle[data-target="bride"] span:first-child { color: #c75050; }
+.account-chevron { color: #999; font-size: 13px; transition: transform 0.25s ease; }
 .account-toggle.open .account-chevron { transform: rotate(180deg); }
 .account-panel {
     max-height: 0;
@@ -450,14 +452,16 @@ section {
 }
 .account-number { font-size: 13px; color: #bbb; }
 .account-copy {
-    background: none;
-    border: none;
-    color: #aaa;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    color: #333;
     cursor: pointer;
-    font-size: 16px;
-    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 14px;
 }
-.account-copy:hover { color: #fff; }
+.account-copy:hover { background: #f0f0f0; }
 /* Guest Snap */
 .snap-card {
     background: #f8f8f8;
@@ -906,7 +910,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                                 </div>
                                 <div class="account-bottom">
                                     <span class="account-number">하나은행 282-910465-82107</span>
-                                    <button class="account-copy" onclick="copyText('28291046582107')" aria-label="계좌번호 복사">📋</button>
+                                    <button class="account-copy" onclick="copyText('28291046582107')" aria-label="계좌번호 복사">복사</button>
                                 </div>
                             </div>
                             <div class="account-card">
@@ -916,7 +920,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                                 </div>
                                 <div class="account-bottom">
                                     <span class="account-number">우체국 701656-02-009958</span>
-                                    <button class="account-copy" onclick="copyText('70165602009958')" aria-label="계좌번호 복사">📋</button>
+                                    <button class="account-copy" onclick="copyText('70165602009958')" aria-label="계좌번호 복사">복사</button>
                                 </div>
                             </div>
                             <div class="account-card">
@@ -926,7 +930,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                                 </div>
                                 <div class="account-bottom">
                                     <span class="account-number">iM뱅크 194-08-097968</span>
-                                    <button class="account-copy" onclick="copyText('19408097968')" aria-label="계좌번호 복사">📋</button>
+                                    <button class="account-copy" onclick="copyText('19408097968')" aria-label="계좌번호 복사">복사</button>
                                 </div>
                             </div>
                         </div>
@@ -944,7 +948,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                                 </div>
                                 <div class="account-bottom">
                                     <span class="account-number">우리은행 1002-453-290448</span>
-                                    <button class="account-copy" onclick="copyText('1002453290448')" aria-label="계좌번호 복사">📋</button>
+                                    <button class="account-copy" onclick="copyText('1002453290448')" aria-label="계좌번호 복사">복사</button>
                                 </div>
                             </div>
                             <div class="account-card">
@@ -954,7 +958,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                                 </div>
                                 <div class="account-bottom">
                                     <span class="account-number">농협은행 302-1892-8179-71</span>
-                                    <button class="account-copy" onclick="copyText('3021892817971')" aria-label="계좌번호 복사">📋</button>
+                                    <button class="account-copy" onclick="copyText('3021892817971')" aria-label="계좌번호 복사">복사</button>
                                 </div>
                             </div>
                         </div>
