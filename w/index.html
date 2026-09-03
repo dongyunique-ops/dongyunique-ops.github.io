@@ -687,7 +687,6 @@ section {
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     transition: border-color 0.2s;
 }
-#msg-name, #msg-text { font-family: 'Gaegu', cursive; font-size: 18px; }
 #msg-password::placeholder { font-size: 12px; color: #bbb; }
 .msg-form input:focus, .msg-form textarea:focus {
     outline: none;
@@ -718,9 +717,9 @@ section {
     justify-content: space-between;
     margin-bottom: 8px;
 }
-.msg-item-name { font-size: 17px; font-weight: 700; font-family: 'Gaegu', cursive; }
+.msg-item-name { font-size: 14px; font-weight: 600; }
 .msg-item-date { font-size: 11px; color: #aaa; }
-.msg-item-text { font-size: 17px; color: #444; line-height: 1.7; font-family: 'Gaegu', cursive; }
+.msg-item-text { font-size: 14px; color: #444; line-height: 1.6; }
 /* Share */
 .share-buttons { display: flex; flex-direction: column; gap: 10px; padding: 0 24px 40px; }
 .share-btn {
@@ -1139,7 +1138,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                 <p class="gallery-subtitle">축하의 말씀을 남겨주세요</p>
                 <div class="msg-form">
                     <label class="msg-label" for="msg-author">성함</label>
-                    <input type="text" id="msg-author" maxlength="20" autocomplete="off">
+                    <input type="text" id="msg-author" autocomplete="off">
                     <label class="msg-label" for="msg-text">내용</label>
                     <textarea id="msg-text" maxlength="200"></textarea>
                     <label class="msg-label" for="msg-password">비밀번호</label>
