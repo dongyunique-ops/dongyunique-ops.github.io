@@ -687,10 +687,6 @@ section {
     transition: border-color 0.2s;
     position: relative;
     z-index: 5;
-    pointer-events: auto;
-    -webkit-user-select: text;
-    user-select: text;
-    touch-action: manipulation;
 }
 #msg-password::placeholder { font-size: 12px; color: #bbb; }
 .msg-form input:focus, .msg-form textarea:focus {
@@ -1302,7 +1298,10 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         if (started) return;
         started = true;
         
-        document.getElementById('opening').classList.add('hide');
+        var opening = document.getElementById('opening');
+        opening.classList.add('hide');
+        // 트랜지션 끝난 뒤 DOM에서 완전히 제거 (입력창 첫 포커스 방해 방지)
+        setTimeout(function() { opening.style.display = 'none'; }, 900);
         var main = document.getElementById('mainContent');
         main.style.opacity = '1';
         main.style.visibility = 'visible';
