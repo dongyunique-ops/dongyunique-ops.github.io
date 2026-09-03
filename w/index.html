@@ -922,11 +922,11 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                     </p>
                     <p style="text-align:center;font-size:13px;color:#444;margin-top:24px;line-height:2;">
                         🎁 미션 수행자 중 가장 멋진 컷을<br>
-                        남겨주신 분께 배민쿠폰을 쏩니다!
+                        남겨주신 분께 배민 쿠폰을 쏩니다!
                     </p>
                     <p style="text-align:center;font-size:13px;color:#888;margin-top:20px;line-height:1.8;">
                         당일날, 아래 버튼을 통해 올려주세요!<br>
-                        많은 참여 부탁드려요! 💖
+                        많은 참여 부탁드립니데이~! 💖
                     </p>
                     <label class="snap-upload-btn" style="cursor:pointer;">
                         사진 및 영상 업로드 (12월 12일 OPEN)
@@ -1048,6 +1048,18 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
 
     <!-- Toast -->
     <div class="toast" id="toast"></div>
+
+    <!-- 커스텀 모달 -->
+    <div class="custom-modal" id="customModal">
+        <div class="custom-modal-box">
+            <p class="custom-modal-title" id="modalTitle"></p>
+            <input type="text" id="modalInput" class="custom-modal-input">
+            <div class="custom-modal-btns">
+                <button onclick="closeModal(false)" class="custom-modal-cancel">취소</button>
+                <button onclick="closeModal(true)" class="custom-modal-ok">확인</button>
+            </div>
+        </div>
+    </div>
 
     <!-- 사진 라이트박스 -->
     <div class="lightbox" id="lightbox">
