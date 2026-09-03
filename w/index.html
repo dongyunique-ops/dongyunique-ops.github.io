@@ -411,7 +411,7 @@ section {
     justify-content: space-between;
     padding: 16px 20px;
     margin-bottom: 10px;
-    background: #f8f8f8;
+    background: #e7f0e2;
     border: none;
     border-radius: 12px;
     font-size: 15px;
@@ -419,7 +419,7 @@ section {
     color: #222;
     cursor: pointer;
 }
-.account-chevron { color: #888; font-size: 13px; transition: transform 0.25s ease; }
+.account-chevron { color: #6b8a5a; font-size: 13px; transition: transform 0.25s ease; }
 .account-toggle.open .account-chevron { transform: rotate(180deg); }
 .account-panel {
     max-height: 0;
@@ -847,6 +847,45 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                 </div>
             </div>
         </section>
+        <!-- Guest Snap -->
+        <section>
+            <div class="inner fade-in">
+                <div class="section-title">GUEST SNAP</div>
+                <div class="snap-card">
+                    <img src="snap_photo.jpg" alt="스냅 사진" style="width:100%;border-radius:10px;margin-bottom:20px;">
+                    <p style="text-align:center;font-size:15px;color:#444;margin-bottom:20px;">
+                        📸 저희의 스냅 작가가 되어주세요! 📸
+                    </p>
+                    <p style="text-align:center;font-size:13px;color:#666;line-height:2.2;">
+                        [미션! 이 순간들을 놓치지 마세요!]<br>
+                        1. 신부 대기실에서 설렘 가득한 순간<br>
+                        2. 웃음 만개! 행복한 신랑신부<br>
+                        3. 눈빛 교환! 마주보는 신랑신부<br>
+                        4. 행복한 피날레 신랑신부 행진<br>
+                        5. 여러분의 미소<br>
+                        (오늘 주인공은 저희뿐만이 아니에요!)<br>
+                        6. 감성 한 스푼 '예술이란 이런 것이다' 한 컷!
+                    </p>
+                    <p style="text-align:center;font-size:13px;color:#444;margin-top:24px;line-height:2;">
+                        🎁 미션 수행자 중 가장 멋진 컷을<br>
+                        남겨주신 분께 배민쿠폰을 쏩니다!
+                    </p>
+                    <p style="text-align:center;font-size:13px;color:#888;margin-top:20px;line-height:1.8;">
+                        당일날, 아래 버튼을 통해 올려주세요!<br>
+                        많은 참여 부탁드려요! 💖
+                    </p>
+                    <label class="snap-upload-btn" style="cursor:pointer;">
+                        사진 및 영상 업로드 (12월 12일 OPEN)
+                        <input type="file" id="snapFileInput" accept="image/*,video/*" multiple style="display:none;" onchange="uploadSnap(this)">
+                    </label>
+                    <p id="uploadStatus" style="text-align:center;font-size:12px;color:#888;margin-top:10px;"></p>
+                    <div class="upload-progress-wrap" id="uploadProgressWrap">
+                        <div class="upload-progress-bar"><div class="upload-progress-fill" id="uploadProgressFill"></div></div>
+                        <p class="upload-progress-text" id="uploadProgressText"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
         <!-- Account -->
         <section>
             <div class="inner fade-in">
@@ -913,50 +952,11 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                                     <span class="account-name">장경주</span>
                                 </div>
                                 <div class="account-bottom">
-                                    <span class="account-number">농협은행 000-000-000000</span>
-                                    <button class="account-copy" onclick="copyText('000-000-000000')" aria-label="계좌번호 복사">📋</button>
+                                    <span class="account-number">농협은행 302-1892-8179-71</span>
+                                    <button class="account-copy" onclick="copyText('3021892817971')" aria-label="계좌번호 복사">📋</button>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <!-- Guest Snap -->
-        <section>
-            <div class="inner fade-in">
-                <div class="section-title">GUEST SNAP</div>
-                <div class="snap-card">
-                    <img src="snap_photo.jpg" alt="스냅 사진" style="width:100%;border-radius:10px;margin-bottom:20px;">
-                    <p style="text-align:center;font-size:15px;color:#444;margin-bottom:20px;">
-                        📸 저희의 스냅 작가가 되어주세요! 📸
-                    </p>
-                    <p style="text-align:center;font-size:13px;color:#666;line-height:2.2;">
-                        [미션! 이 순간들을 놓치지 마세요!]<br>
-                        1. 신부 대기실에서 설렘 가득한 순간<br>
-                        2. 웃음 만개! 행복한 신랑신부<br>
-                        3. 눈빛 교환! 마주보는 신랑신부<br>
-                        4. 행복한 피날레 신랑신부 행진<br>
-                        5. 여러분의 미소<br>
-                        (오늘 주인공은 저희뿐만이 아니에요!)<br>
-                        6. 감성 한 스푼 '예술이란 이런 것이다' 한 컷!
-                    </p>
-                    <p style="text-align:center;font-size:13px;color:#444;margin-top:24px;line-height:2;">
-                        🎁 미션 수행자 중 가장 멋진 컷을<br>
-                        남겨주신 분께 배민쿠폰을 쏩니다!
-                    </p>
-                    <p style="text-align:center;font-size:13px;color:#888;margin-top:20px;line-height:1.8;">
-                        당일날, 아래 버튼을 통해 올려주세요!<br>
-                        많은 참여 부탁드려요! 💖
-                    </p>
-                    <label class="snap-upload-btn" style="cursor:pointer;">
-                        사진 및 영상 업로드 (12월 12일 OPEN)
-                        <input type="file" id="snapFileInput" accept="image/*,video/*" multiple style="display:none;" onchange="uploadSnap(this)">
-                    </label>
-                    <p id="uploadStatus" style="text-align:center;font-size:12px;color:#888;margin-top:10px;"></p>
-                    <div class="upload-progress-wrap" id="uploadProgressWrap">
-                        <div class="upload-progress-bar"><div class="upload-progress-fill" id="uploadProgressFill"></div></div>
-                        <p class="upload-progress-text" id="uploadProgressText"></p>
                     </div>
                 </div>
             </div>
