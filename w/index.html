@@ -538,35 +538,37 @@ section {
 }
 
 /* Message */
-.msg-form { margin-bottom: 32px; }
+.msg-form { margin-bottom: 32px; text-align: left; }
+.msg-label { display: block; font-size: 14px; color: #333; font-weight: 500; margin-bottom: 10px; }
 .msg-form input, .msg-form textarea {
     width: 100%;
     border: 1px solid #eee;
-    border-radius: 10px;
-    padding: 14px 16px;
+    border-radius: 14px;
+    padding: 16px 18px;
     font-size: 14px;
     font-family: inherit;
-    margin-bottom: 10px;
-    background: #fafafa;
+    margin-bottom: 24px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     transition: border-color 0.2s;
 }
 .msg-form input:focus, .msg-form textarea:focus {
     outline: none;
     border-color: #ccc;
 }
-.msg-form textarea { resize: none; height: 100px; }
+.msg-form textarea { resize: none; height: 140px; }
 .msg-submit {
     width: 100%;
-    padding: 14px;
-    background: #333;
+    padding: 16px;
+    background: #e8b4ba;
     color: #fff;
     border: none;
-    border-radius: 10px;
-    font-size: 14px;
+    border-radius: 14px;
+    font-size: 15px;
     cursor: pointer;
     font-weight: 500;
 }
-.msg-submit:hover { background: #222; }
+.msg-submit:hover { background: #dba0a7; }
 .msg-list { display: flex; flex-direction: column; gap: 12px; }
 .msg-item {
     background: #f8f8f8;
@@ -980,9 +982,13 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                 <div class="section-title">MESSAGE</div>
                 <p class="gallery-subtitle">축하의 말씀을 남겨주세요</p>
                 <div class="msg-form">
-                    <input type="text" id="msg-name" placeholder="이름" maxlength="20">
-                    <textarea id="msg-text" placeholder="축하 메시지를 남겨주세요" maxlength="200"></textarea>
-                    <button class="msg-submit" onclick="submitMessage()">남기기</button>
+                    <label class="msg-label">성함</label>
+                    <input type="text" id="msg-name" maxlength="20">
+                    <label class="msg-label">내용</label>
+                    <textarea id="msg-text" maxlength="200"></textarea>
+                    <label class="msg-label">비밀번호</label>
+                    <input type="password" id="msg-password" placeholder="비밀번호 입력 (수정·삭제 시 필요)" maxlength="20">
+                    <button class="msg-submit" onclick="submitMessage()">작성</button>
                 </div>
                 <div class="msg-list" id="msgList"></div>
                 <button class="msg-show-all" id="msgShowAll" onclick="showAllMessages()" style="display:none;width:100%;padding:12px;margin-top:12px;background:none;border:1px solid #ddd;border-radius:10px;font-size:13px;color:#666;cursor:pointer;">전체 방명록 보기</button>
@@ -1532,11 +1538,16 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
             }).catch(() => { list.innerHTML = ''; });
     }
 
+    // 메시지 비밀번호는 구글시트에 저장되지 않으므로(백엔드 미지원), 작성한 이 브라우저에만
+    // localStorage로 보관해서 수정 시 대조함 (다른 기기에서는 수정 불가)
+    function msgKey(m) {
+        return 'wedding_msg_pw_' + m.name + '|' + m.date;
+    }
+
     function displayMessages(all) {
         const list = document.getElementById('msgList');
         const btn = document.getElementById('msgShowAll');
         const toShow = all ? allMessages : allMessages.slice(0, 4);
-        const myName = sessionStorage.getItem('wedding_msg_name') || '';
         list.innerHTML = toShow.map((m, i) => `
             <div class="msg-item">
                 <div class="msg-item-header">
@@ -1544,7 +1555,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                     <span class="msg-item-date">${escapeHtml(m.date)}</span>
                 </div>
                 <p class="msg-item-text">${escapeHtml(m.text)}</p>
-                ${m.name === myName ? '<button onclick="editMessage('+i+')" style="background:none;border:none;color:#aaa;font-size:11px;cursor:pointer;margin-top:4px;">수정</button>' : ''}
+                <button onclick="editMessage(${i})" style="background:none;border:none;color:#aaa;font-size:11px;cursor:pointer;margin-top:4px;">수정</button>
             </div>
         `).join('');
         if (allMessages.length > 4 && !all) {
@@ -1557,6 +1568,13 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
 
     function editMessage(index) {
         var m = allMessages[index];
+        var inputPw = prompt('비밀번호를 입력해주세요');
+        if (inputPw === null) return;
+        var savedPw = localStorage.getItem(msgKey(m));
+        if (!savedPw || inputPw !== savedPw) {
+            showToast('비밀번호가 일치하지 않습니다');
+            return;
+        }
         var newText = prompt('메시지 수정:', m.text);
         if (newText !== null && newText.trim() !== '') {
             allMessages[index].text = newText.trim();
@@ -1572,23 +1590,26 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
     function submitMessage() {
         const nameEl = document.getElementById('msg-name');
         const textEl = document.getElementById('msg-text');
+        const pwEl = document.getElementById('msg-password');
         const name = nameEl.value.trim();
         const text = textEl.value.trim();
-        if (!name || !text) {
-            showToast('이름과 메시지를 입력해주세요');
+        const password = pwEl.value.trim();
+        if (!name || !text || !password) {
+            showToast('성함, 내용, 비밀번호를 모두 입력해주세요');
             return;
         }
         const now = new Date();
         const date = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
-        
-        // 본인 이름 저장
-        sessionStorage.setItem('wedding_msg_name', name);
+
+        // 수정 시 대조할 비밀번호를 이 브라우저에 저장
+        localStorage.setItem(msgKey({ name, date }), password);
 
         // 즉시 화면에 표시 (낙관적 업데이트)
         allMessages.unshift({ name, text, date });
         displayMessages(false);
         nameEl.value = '';
         textEl.value = '';
+        pwEl.value = '';
         showToast('메시지가 등록되었습니다');
 
         // 서버에 저장
