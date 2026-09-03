@@ -552,16 +552,6 @@ section {
     text-align: left;
     margin-top: 24px;
 }
-.snap-highlight {
-    display: inline-block;
-    color: #7d9a6b;
-    font-weight: 600;
-    animation: snapBounce 1.6s ease-in-out infinite;
-}
-@keyframes snapBounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-4px); }
-}
 .snap-card .snap-notice {
     font-size: 13px;
     color: #888;
@@ -972,7 +962,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                 <div class="snap-card">
                     <img src="snap_photo.jpg" alt="스냅 사진" style="width:100%;border-radius:10px;margin-bottom:20px;">
                     <p style="text-align:center;font-size:15px;color:#444;margin-bottom:20px;">
-                        📸 <span class="snap-highlight">저희의 스냅 작가가 되어주세요!</span> 📸
+                        📸 저희의 스냅 작가가 되어주세요! 📸
                     </p>
                     <p style="text-align:center;font-size:13px;color:#666;line-height:2.2;">
                         [미션! 이 순간들을 놓치지 마세요!]<br>
@@ -1090,7 +1080,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                     <label class="msg-label" for="msg-text">내용</label>
                     <textarea id="msg-text" maxlength="200"></textarea>
                     <label class="msg-label" for="msg-password">비밀번호</label>
-                    <input type="password" id="msg-password" placeholder="비밀번호 입력 (수정·삭제 시 필요)" maxlength="20" autocomplete="off">
+                    <input type="password" id="msg-password" placeholder="비밀번호 입력 (수정·삭제 시 필요해요)" maxlength="20" autocomplete="off">
                     <button class="msg-submit" onclick="submitMessage()">작성</button>
                 </div>
                 <div class="msg-list" id="msgList"></div>
@@ -1170,6 +1160,77 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
     var musicPlaying = false;
     var started = false;
 
+    // 하트 완성 후 넘어가는 화면에 하트 모양 컨페티 효과
+    function launchHeartConfetti() {
+        var canvas = document.createElement('canvas');
+        canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:9998;pointer-events:none;';
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        document.body.appendChild(canvas);
+        var ctx = canvas.getContext('2d');
+        var colors = ['#ff6b6b', '#ffb86b', '#ffe66b', '#6bcf7f', '#6ba8ff', '#b06bff', '#ff9ecf'];
+        var particles = [];
+        var count = 70;
+        for (var i = 0; i < count; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: -20 - Math.random() * canvas.height * 0.6,
+                vx: (Math.random() - 0.5) * 3,
+                vy: 2 + Math.random() * 3,
+                size: 8 + Math.random() * 10,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                rotation: Math.random() * Math.PI * 2,
+                rotationSpeed: (Math.random() - 0.5) * 0.2,
+                opacity: 1
+            });
+        }
+
+        function drawHeart(x, y, size, color, rotation, opacity) {
+            var s = size / 20;
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(rotation);
+            ctx.globalAlpha = opacity;
+            ctx.beginPath();
+            ctx.moveTo(0, 4 * s);
+            ctx.bezierCurveTo(0, 2 * s, -2 * s, 0, -5 * s, 0);
+            ctx.bezierCurveTo(-9 * s, 0, -9 * s, 5 * s, -9 * s, 5 * s);
+            ctx.bezierCurveTo(-9 * s, 9 * s, -5 * s, 12 * s, 0, 16 * s);
+            ctx.bezierCurveTo(5 * s, 12 * s, 9 * s, 9 * s, 9 * s, 5 * s);
+            ctx.bezierCurveTo(9 * s, 5 * s, 9 * s, 0, 5 * s, 0);
+            ctx.bezierCurveTo(2 * s, 0, 0, 2 * s, 0, 4 * s);
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.restore();
+        }
+
+        var startTime = Date.now();
+        var duration = 3000;
+        function animate() {
+            var elapsed = Date.now() - startTime;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            var stillVisible = false;
+            particles.forEach(function(p) {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.03;
+                p.rotation += p.rotationSpeed;
+                if (elapsed > duration - 600) {
+                    p.opacity = Math.max(0, p.opacity - 0.03);
+                }
+                if (p.y < canvas.height + 30 && p.opacity > 0) stillVisible = true;
+                drawHeart(p.x, p.y, p.size, p.color, p.rotation, p.opacity);
+            });
+            if (elapsed < duration && stillVisible) {
+                requestAnimationFrame(animate);
+            } else {
+                canvas.remove();
+            }
+        }
+        requestAnimationFrame(animate);
+    }
+
     function startWedding() {
         if (started) return;
         started = true;
@@ -1179,6 +1240,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         main.style.opacity = '1';
         main.style.visibility = 'visible';
         document.getElementById('musicBtn').style.display = 'flex';
+        launchHeartConfetti();
         
         // Create audio fresh inside user gesture
         var audio = new Audio();
