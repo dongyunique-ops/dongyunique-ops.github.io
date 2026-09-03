@@ -114,18 +114,21 @@ section {
     z-index: 2;
 }
 .opening-text p {
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards;
     pointer-events: none;
     color: #fff;
     text-shadow: 0 1px 8px rgba(0,0,0,0.3);
 }
-.opening-text .op-line1 { font-size: 16px; font-weight: 300; letter-spacing: 2px; }
-.opening-text .op-names { font-size: 28px; font-weight: 600; letter-spacing: 3px; }
-.opening-text .op-date { font-size: 13px; font-weight: 300; letter-spacing: 2px; color: rgba(255,255,255,0.85); }
+.opening-text .op-line1 { animation-delay: 0.3s; font-size: 16px; font-weight: 300; letter-spacing: 2px; }
+.opening-text .op-names { animation-delay: 1.0s; font-size: 28px; font-weight: 600; letter-spacing: 3px; }
+.opening-text .op-date { animation-delay: 1.7s; font-size: 13px; font-weight: 300; letter-spacing: 2px; color: rgba(255,255,255,0.85); }
 .opening-text .op-tap {
+    animation-delay: 2.5s;
     font-size: 12px;
     color: rgba(255,255,255,0.7);
     margin-top: 30px;
-    animation: pulse 2s ease-in-out infinite;
+    animation: fadeUp 0.8s ease 2.5s forwards, pulse 2s ease-in-out 3.3s infinite;
 }
 .opening-heart-svg {
     position: absolute;
@@ -188,12 +191,16 @@ section {
     left: 50%;
     width: 26px;
     height: 1.5px;
-    background: #d05a5a;
+    background: #7d9a6b;
     transform: translate(-50%, -50%) rotate(-45deg);
 }
 @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
+}
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 /* Hero */
 .hero {
