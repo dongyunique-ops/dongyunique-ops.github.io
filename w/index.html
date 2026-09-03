@@ -1085,14 +1085,17 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         function getHeartPoint(t) {
             var cx = canvas.width / 2;
             var cy = canvas.height / 2 - 10;
-            var scale = Math.min(canvas.width, canvas.height) * 0.005;
+            // 화면에 보이는 점선 하트(.opening-heart-svg, 220x200px 고정)와 크기를 맞춤.
+            // 예전에는 캔버스 크기 기준(약 60x54px)으로 너무 작게 잡혀서, 하트 중앙 근처만
+            // 문질러도 대부분의 판정 지점이 한꺼번에 히트되어 조금만 그려도 다음 화면으로 넘어갔음.
+            var scale = 6.5;
             var x = 16 * Math.pow(Math.sin(t), 3);
             var y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
             return { x: cx + x * scale, y: cy + y * scale };
         }
 
         function checkSegment(px, py) {
-            var hitDist = 55;
+            var hitDist = 30;
             for (var i = 0; i < segments; i++) {
                 if (segmentHit[i]) continue;
                 var t = (i / segments) * Math.PI * 2;
