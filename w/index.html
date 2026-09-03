@@ -181,6 +181,16 @@ section {
 }
 .music-btn:hover { background: #f0f0f0; }
 .music-btn.playing { animation: spin 3s linear infinite; border-color: #7d9a6b; }
+.music-btn.muted::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 26px;
+    height: 1.5px;
+    background: #d05a5a;
+    transform: translate(-50%, -50%) rotate(-45deg);
+}
 @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
@@ -1204,10 +1214,12 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
             window.bgmAudio.pause();
             musicPlaying = false;
             document.getElementById('musicBtn').classList.remove('playing');
+            document.getElementById('musicBtn').classList.add('muted');
         } else {
             window.bgmAudio.play();
             musicPlaying = true;
             document.getElementById('musicBtn').classList.add('playing');
+            document.getElementById('musicBtn').classList.remove('muted');
         }
     }
 
