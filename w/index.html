@@ -248,6 +248,14 @@ section {
 @keyframes emojiShine {
     to { -webkit-mask-position: -200% center; mask-position: -200% center; }
 }
+.days-glow {
+    color: #e0a3b4;
+    animation: daysGlow 2s ease-in-out infinite;
+}
+@keyframes daysGlow {
+    0%, 100% { text-shadow: 0 0 2px rgba(224,163,180,0.3); opacity: 1; }
+    50% { text-shadow: 0 0 10px rgba(224,163,180,0.9), 0 0 16px rgba(224,163,180,0.5); opacity: 0.85; }
+}
 .music-btn.muted::after {
     content: '';
     position: absolute;
@@ -918,7 +926,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                     <div class="day-cell"></div>
                 </div>
                 <div class="countdown-row">
-                    <div class="countdown-box"><span class="num" id="cd-days" style="color:#e0a3b4;">0</span><span class="label" style="color:#e0a3b4;">DAYS</span></div>
+                    <div class="countdown-box"><span class="num days-glow" id="cd-days">0</span><span class="label" style="color:#e0a3b4;">DAYS</span></div>
                     <div class="countdown-box"><span class="num" id="cd-hours">0</span><span class="label">HOURS</span></div>
                     <div class="countdown-box"><span class="num" id="cd-mins">0</span><span class="label">MIN</span></div>
                     <div class="countdown-box"><span class="num" id="cd-secs">0</span><span class="label">SEC</span></div>
@@ -987,7 +995,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                 <div class="snap-card">
                     <img src="snap_photo.jpg" alt="스냅 사진" style="width:100%;border-radius:10px;margin-bottom:20px;">
                     <p style="text-align:center;font-size:15px;margin-bottom:20px;">
-                        <span class="snap-emoji-shine">📸</span> <span class="snap-sparkle">저희의 스냅 작가가 되어주세요!</span> <span class="snap-emoji-shine">📸</span>
+                        <span class="snap-emoji-shine">📸</span> <span class="snap-sparkle">저희의 스냅 작가가 되어주실래요?</span> <span class="snap-emoji-shine">📸</span>
                     </p>
                     <p style="text-align:center;font-size:13px;color:#666;line-height:2.2;">
                         [미션! 이 순간들을 놓치지 마세요!]<br>
