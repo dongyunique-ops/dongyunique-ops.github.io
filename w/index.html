@@ -552,7 +552,7 @@ section {
 .msg-submit {
     width: 100%;
     padding: 16px;
-    background: #e8b4ba;
+    background: #7d9a6b;
     color: #fff;
     border: none;
     border-radius: 14px;
@@ -560,7 +560,7 @@ section {
     cursor: pointer;
     font-weight: 500;
 }
-.msg-submit:hover { background: #dba0a7; }
+.msg-submit:hover { background: #6b8a5a; }
 .msg-list { display: flex; flex-direction: column; gap: 12px; }
 .msg-item {
     background: #f8f8f8;
@@ -589,7 +589,7 @@ section {
     cursor: pointer;
     text-align: center;
 }
-.share-kakao { background: #c8e6a0; color: #333; }
+.share-kakao { background: #f5eda0; color: #333; }
 .share-copy { background: #f5eda0; color: #333; }
 .share-btn:hover { opacity: 0.9; }
 
@@ -848,9 +848,18 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                     </a>
                 </div>
                 <div class="transport-info">
-                    <p>🚇 지하철: 8호선 장지역 4번 출구 도보 4분</p>
-                    <p>🚗 자차: 우리은행 가든파이브점 검색 → 지하주차장 B2~B5 (3시간 무료)</p>
-                    <p>🚌 버스: 가든파이브웍스 하차 (402, 3426)</p>
+                    <div class="transport-row">
+                        <span class="transport-label">🚇 지하철</span>
+                        <span class="transport-desc">8호선 장지역 4번 출구 도보 4분</span>
+                    </div>
+                    <div class="transport-row">
+                        <span class="transport-label">🚗 자차</span>
+                        <span class="transport-desc">'우리은행 가든파이브점' 검색<br>지하주차장 B2~B5 (3시간 무료)</span>
+                    </div>
+                    <div class="transport-row">
+                        <span class="transport-label">🚌 버스</span>
+                        <span class="transport-desc">가든파이브웍스 하차 (402, 3426)</span>
+                    </div>
                 </div>
             </div>
         </section>
