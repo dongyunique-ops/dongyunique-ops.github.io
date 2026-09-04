@@ -1443,21 +1443,18 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
 
             var progress = checkSegment(pos.x, pos.y);
             if (progress >= 0.8 && !heartCompleted) {
-                // drawing은 계속 true로 둬서 손을 떼기 전까지 점선 그리기가 끊기지 않게 함.
-                // 아이폰 사파리는 touchmove 도중의 오디오 재생을 정식 사용자 제스처로
-                // 인정하지 않는 경우가 있어, 실제 시작은 이 제스처가 끝나는
-                // touchend/mouseup(endDraw) 시점으로 미룸
+                // 손을 떼지 않아도 점선을 다 그리면 바로 완성 처리.
+                // unlockAudio()가 startDraw(touchstart)에서 이미 오디오를 한 번
+                // 재생/정지해 잠금 해제해뒀기 때문에, touchmove 도중에 startWedding()이
+                // 오디오를 재생해도 아이폰 사파리에서 정상 동작함.
                 heartCompleted = true;
+                startWedding();
             }
         }
 
         function endDraw() {
             drawing = false;
             lastPos = null;
-            if (heartCompleted) {
-                heartCompleted = false;
-                startWedding();
-            }
         }
 
         canvas.addEventListener('mousedown', startDraw, false);
