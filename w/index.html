@@ -1437,8 +1437,8 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
             lastPos = pos;
 
             var progress = checkSegment(pos.x, pos.y);
-            if (progress >= 0.8) {
-                drawing = false;
+            if (progress >= 0.8 && !heartCompleted) {
+                // drawing은 계속 true로 둬서 손을 떼기 전까지 점선 그리기가 끊기지 않게 함.
                 // 아이폰 사파리는 touchmove 도중의 오디오 재생을 정식 사용자 제스처로
                 // 인정하지 않는 경우가 있어, 실제 시작은 이 제스처가 끝나는
                 // touchend/mouseup(endDraw) 시점으로 미룸
