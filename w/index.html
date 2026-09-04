@@ -17,7 +17,7 @@
         }
     })();
     </script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>동윤 ♥ 희은 결혼합니다</title>
     <meta name="description" content="2026년 12월 12일 토요일 오후 2시, 엘로라 인 가든">
     <meta property="og:title" content="동윤 ♥ 희은 결혼합니다">
@@ -310,25 +310,23 @@ section {
 .hero {
     padding: 0;
     position: relative;
-    width: 100%;
-    aspect-ratio: 472 / 965;
-    max-height: 965px;
+    height: 100vh;
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    background: url('hero_bg.jpg') center center / cover no-repeat;
+    background: url('hero_bg.jpg') center top / cover no-repeat;
+    background-attachment: scroll;
 }
 .hero::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(to bottom, rgba(255,255,255,0) 55%, rgba(255,255,255,0.85) 88%);
+    background: linear-gradient(to bottom, rgba(255,255,255,0) 40%, rgba(255,255,255,0.85) 70%);
 }
 .hero .inner {
     position: relative;
     z-index: 1;
     padding: 0 24px 80px;
-    text-align: center;
 }
 .hero-subtitle {
     font-family: 'Cormorant Garamond', serif;
@@ -1214,29 +1212,6 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
     var musicPlaying = false;
     var started = false;
 
-    // 오디오 엘리먼트를 페이지 로드 시 미리 하나만 만들어두고, 하트를 그리기
-    // '시작'하는 첫 터치에서 아주 짧게 재생→즉시 정지시켜 미리 "언락"해둠.
-    // 아이폰 사파리는 한 번 제스처로 언락된 오디오 엘리먼트는 이후 시점(터치 종료 등)에
-    // 다시 play()를 호출해도 훨씬 안정적으로 허용하는 것으로 알려져 있음
-    var bgmAudio = new Audio('bgm.mp3');
-    bgmAudio.loop = true;
-    bgmAudio.volume = 0.3;
-    window.bgmAudio = bgmAudio;
-    var audioUnlocked = false;
-    function unlockAudio() {
-        if (audioUnlocked) return;
-        audioUnlocked = true;
-        var p = bgmAudio.play();
-        if (p && p.then) {
-            p.then(function() {
-                bgmAudio.pause();
-                bgmAudio.currentTime = 0;
-            }).catch(function() {
-                audioUnlocked = false;
-            });
-        }
-    }
-
     // 하트 완성 후 넘어가는 화면에 하트 모양 컨페티 효과
     function launchHeartConfetti() {
         var canvas = document.createElement('canvas');
@@ -1311,12 +1286,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
     function startWedding() {
         if (started) return;
         started = true;
-
-        // 미리 언락해둔 오디오 엘리먼트를 재생 (DOM 조작/컨페티보다 먼저 호출해서
-        // 이 시점의 사용자 제스처와 최대한 가깝게 유지)
-        var audio = bgmAudio;
-        var playPromise = audio.play();
-
+        
         var opening = document.getElementById('opening');
         opening.classList.add('hide');
         // 트랜지션 끝난 뒤 DOM에서 완전히 제거 (입력창 첫 포커스 방해 방지)
@@ -1326,8 +1296,14 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         main.style.visibility = 'visible';
         document.getElementById('musicBtn').style.display = 'flex';
         launchHeartConfetti();
-
-        playPromise.then(function() {
+        
+        // Create audio fresh inside user gesture
+        var audio = new Audio();
+        audio.src = 'bgm.mp3';
+        audio.loop = true;
+        audio.volume = 0.3;
+        window.bgmAudio = audio;
+        audio.play().then(function() {
             musicPlaying = true;
             document.getElementById('musicBtn').classList.add('playing');
         }).catch(function(e) {
@@ -1352,17 +1328,11 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         var canvas = document.getElementById('heartCanvas');
         var ctx = canvas.getContext('2d');
         var drawing = false;
-        var heartCompleted = false;
 
         function resizeCanvas() {
             var container = canvas.parentElement;
             var w = container.clientWidth || window.innerWidth;
             var h = container.clientHeight || window.innerHeight;
-            // 크기가 그대로여도 canvas.width를 다시 대입하면 캔버스가 초기화(그림 삭제)됨.
-            // 아이폰 사파리는 그림을 그리는 도중(스크롤처럼 보이는 제스처)에도
-            // 주소창이 접히고 펴지면서 resize 이벤트를 발생시켜, 이 가드가 없으면
-            // 하트를 반쯤 그리다가 갑자기 선이 지워지는 문제가 생김.
-            if (canvas.width === w && canvas.height === h) return;
             canvas.width = w;
             canvas.height = h;
             canvas.style.width = w + 'px';
@@ -1418,7 +1388,6 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
             if (started) return;
             e.preventDefault();
             e.stopPropagation();
-            unlockAudio();
             drawing = true;
             lastPos = getPos(e);
         }
@@ -1442,12 +1411,8 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
             lastPos = pos;
 
             var progress = checkSegment(pos.x, pos.y);
-            if (progress >= 0.8 && !heartCompleted) {
-                // 손을 떼지 않아도 점선을 다 그리면 바로 완성 처리.
-                // unlockAudio()가 startDraw(touchstart)에서 이미 오디오를 한 번
-                // 재생/정지해 잠금 해제해뒀기 때문에, touchmove 도중에 startWedding()이
-                // 오디오를 재생해도 아이폰 사파리에서 정상 동작함.
-                heartCompleted = true;
+            if (progress >= 0.8) {
+                drawing = false;
                 startWedding();
             }
         }
@@ -1536,29 +1501,15 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         touchEndX = e.changedTouches[0].clientX;
         var diff = touchStartX - touchEndX;
         if (Math.abs(diff) > 50) {
-            // 스와이프
             swipeHandled = true;
             if (diff > 0) { currentPhoto = (currentPhoto + 1) % photos.length; showPhoto(); }
             else { currentPhoto = (currentPhoto - 1 + photos.length) % photos.length; showPhoto(); }
-        } else if (e.target === lbImg) {
-            // 이미지를 그냥 탭 → 다음 장
-            swipeHandled = true;
-            currentPhoto = (currentPhoto + 1) % photos.length;
-            showPhoto();
         }
     });
 
-    // 클릭 처리 (PC용) - 터치가 이미 처리했으면 무시
-    var lastTouchTime = 0;
-    lb.addEventListener('touchend', function() { lastTouchTime = Date.now(); });
+    // 배경(이미지 바깥) 클릭 시 닫기
     lb.addEventListener('click', function(e) {
-        if (Date.now() - lastTouchTime < 500) return; // 터치로 이미 처리됨
-        if (e.target === lb) {
-            closePhoto();
-        } else if (e.target === lbImg) {
-            currentPhoto = (currentPhoto + 1) % photos.length;
-            showPhoto();
-        }
+        if (e.target === lb) closePhoto();
     });
 
     // 티맵 열기
@@ -1988,19 +1939,6 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
 
     // Init messages
     renderMessages();
-
-    // 핀치 줌 / 더블탭 확대 방지 (입력에는 영향 없음)
-    document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
-    document.addEventListener('gesturechange', function(e) { e.preventDefault(); });
-    document.addEventListener('touchmove', function(e) {
-        if (e.touches.length > 1) { e.preventDefault(); }
-    }, { passive: false });
-    var lastTouchEnd = 0;
-    document.addEventListener('touchend', function(e) {
-        var now = Date.now();
-        if (now - lastTouchEnd < 300) { e.preventDefault(); }
-        lastTouchEnd = now;
-    }, false);
     </script>
 </body>
 </html>
