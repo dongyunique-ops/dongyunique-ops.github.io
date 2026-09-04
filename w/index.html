@@ -288,16 +288,6 @@ section {
     0%, 60%, 100% { transform: translateY(0); }
     30% { transform: translateY(-6px); }
 }
-.rainbow-date {
-    display: inline-block;
-    background: linear-gradient(90deg, #ff6b6b, #ffb86b, #ffe66b, #6bcf7f, #6ba8ff, #b06bff, #ff6b6b);
-    background-size: 400% 100%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-    animation: rainbowShine 9s linear infinite;
-}
 .music-btn.muted::after {
     content: '';
     position: absolute;
@@ -379,21 +369,6 @@ section {
     text-align: center;
 }
 .parents-info .name { color: #222; font-weight: 500; }
-.rainbow-text {
-    display: inline-block;
-    background: linear-gradient(90deg, #ff6b6b, #ffb86b, #ffe66b, #6bcf7f, #6ba8ff, #b06bff, #ff6b6b);
-    background-size: 400% 100%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: #444;
-    font-weight: 500;
-    animation: rainbowShine 9s linear infinite;
-}
-@keyframes rainbowShine {
-    0% { background-position: 400% 50%; }
-    100% { background-position: 0% 50%; }
-}
 /* Calendar */
 .sec-calendar { background: #f8f8f8; }
 .cal-date-kr { font-size: 14px; color: #444; margin-bottom: 4px; }
@@ -897,7 +872,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         <section class="hero" id="hero">
             <div class="inner fade-in">
                 <p class="hero-subtitle">DONGYUN &amp; HEEEUN</p>
-                <p class="hero-date rainbow-date">12. 12</p>
+                <p class="hero-date">12. 12</p>
                 <p class="hero-info">2026년 12월 12일 토요일 | 오후 2시</p>
                 <p class="hero-venue">엘로라 인 가든</p>
             </div>
@@ -909,7 +884,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                 <div class="section-title">INVITATION</div>
                 <p class="invitation-text" style="font-size:13px;line-height:2.4;">
                     서로의 일상을 특별하게 만들어주던 두 사람이<br>
-                    이제는 서로의 든든한 <span class="rainbow-text">평생의 편</span>이 되고자 합니다.<br><br>
+                    이제는 서로의 든든한 평생의 편이 되고자 합니다.<br><br>
                     저희 두 사람이 사랑의 이름으로 지켜나갈 수 있게<br>
                     축복해 주시면 감사하겠습니다.
                 </p>
@@ -1037,7 +1012,6 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
             <div class="inner fade-in">
                 <div class="section-title">GUEST SNAP</div>
                 <div class="snap-card">
-                    <img src="snap_photo.jpg" alt="스냅 사진" style="width:100%;border-radius:10px;margin-bottom:20px;">
                     <p style="text-align:center;font-size:15px;margin-bottom:20px;">
                         <span class="snap-emoji-shine">📸</span> <span class="snap-sparkle">저희의 스냅 작가가 되어주실래요?</span> <span class="snap-emoji-shine">📸</span>
                     </p>
@@ -1246,7 +1220,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         canvas.height = window.innerHeight;
         document.body.appendChild(canvas);
         var ctx = canvas.getContext('2d');
-        var colors = ['#ff6b6b', '#ffb86b', '#ffe66b', '#6bcf7f', '#6ba8ff', '#b06bff', '#ff9ecf'];
+        var colors = ['#ffe066', '#ff9ecf', '#a8e6a1'];
         var particles = [];
         var count = 70;
         for (var i = 0; i < count; i++) {
