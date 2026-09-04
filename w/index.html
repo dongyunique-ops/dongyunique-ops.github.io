@@ -17,7 +17,7 @@
         }
     })();
     </script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>동윤 ♥ 희은 결혼합니다</title>
     <meta name="description" content="2026년 12월 12일 토요일 오후 2시, 엘로라 인 가든">
     <meta property="og:title" content="동윤 ♥ 희은 결혼합니다">
@@ -310,23 +310,22 @@ section {
 .hero {
     padding: 0;
     position: relative;
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    background: url('hero_bg.jpg') center top / cover no-repeat;
-    background-attachment: scroll;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    background: #fff;
 }
-.hero::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, rgba(255,255,255,0) 40%, rgba(255,255,255,0.85) 70%);
+.hero-photo {
+    width: 100%;
+    display: block;
 }
 .hero .inner {
     position: relative;
     z-index: 1;
-    padding: 0 24px 80px;
+    padding: 32px 24px 60px;
+    text-align: center;
 }
 .hero-subtitle {
     font-family: 'Cormorant Garamond', serif;
@@ -870,6 +869,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
     <main id="mainContent" style="opacity:0;visibility:hidden;transition:opacity 0.8s ease,visibility 0.8s ease;">
         <!-- Hero -->
         <section class="hero" id="hero">
+            <img src="hero_bg.jpg" alt="동윤 희은" class="hero-photo">
             <div class="inner fade-in">
                 <p class="hero-subtitle">DONGYUN &amp; HEEEUN</p>
                 <p class="hero-date">12. 12</p>
