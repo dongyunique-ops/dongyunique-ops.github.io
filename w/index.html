@@ -311,8 +311,8 @@ section {
     padding: 0;
     position: relative;
     width: 100%;
-    aspect-ratio: 480 / 920;
-    max-height: 920px;
+    aspect-ratio: 472 / 965;
+    max-height: 965px;
     display: flex;
     align-items: flex-end;
     justify-content: center;
@@ -1358,6 +1358,11 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
             var container = canvas.parentElement;
             var w = container.clientWidth || window.innerWidth;
             var h = container.clientHeight || window.innerHeight;
+            // 크기가 그대로여도 canvas.width를 다시 대입하면 캔버스가 초기화(그림 삭제)됨.
+            // 아이폰 사파리는 그림을 그리는 도중(스크롤처럼 보이는 제스처)에도
+            // 주소창이 접히고 펴지면서 resize 이벤트를 발생시켜, 이 가드가 없으면
+            // 하트를 반쯤 그리다가 갑자기 선이 지워지는 문제가 생김.
+            if (canvas.width === w && canvas.height === h) return;
             canvas.width = w;
             canvas.height = h;
             canvas.style.width = w + 'px';
