@@ -1328,6 +1328,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         var canvas = document.getElementById('heartCanvas');
         var ctx = canvas.getContext('2d');
         var drawing = false;
+        var heartCompleted = false;
 
         function resizeCanvas() {
             var container = canvas.parentElement;
@@ -1413,13 +1414,20 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
             var progress = checkSegment(pos.x, pos.y);
             if (progress >= 0.8) {
                 drawing = false;
-                startWedding();
+                // 아이폰 사파리는 touchmove 도중의 오디오 재생을 정식 사용자 제스처로
+                // 인정하지 않는 경우가 있어, 실제 시작은 이 제스처가 끝나는
+                // touchend/mouseup(endDraw) 시점으로 미룸
+                heartCompleted = true;
             }
         }
 
         function endDraw() {
             drawing = false;
             lastPos = null;
+            if (heartCompleted) {
+                heartCompleted = false;
+                startWedding();
+            }
         }
 
         canvas.addEventListener('mousedown', startDraw, false);
