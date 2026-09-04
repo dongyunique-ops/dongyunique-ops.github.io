@@ -1212,6 +1212,29 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
     var musicPlaying = false;
     var started = false;
 
+    // 오디오 엘리먼트를 페이지 로드 시 미리 하나만 만들어두고, 하트를 그리기
+    // '시작'하는 첫 터치에서 아주 짧게 재생→즉시 정지시켜 미리 "언락"해둠.
+    // 아이폰 사파리는 한 번 제스처로 언락된 오디오 엘리먼트는 이후 시점(터치 종료 등)에
+    // 다시 play()를 호출해도 훨씬 안정적으로 허용하는 것으로 알려져 있음
+    var bgmAudio = new Audio('bgm.mp3');
+    bgmAudio.loop = true;
+    bgmAudio.volume = 0.3;
+    window.bgmAudio = bgmAudio;
+    var audioUnlocked = false;
+    function unlockAudio() {
+        if (audioUnlocked) return;
+        audioUnlocked = true;
+        var p = bgmAudio.play();
+        if (p && p.then) {
+            p.then(function() {
+                bgmAudio.pause();
+                bgmAudio.currentTime = 0;
+            }).catch(function() {
+                audioUnlocked = false;
+            });
+        }
+    }
+
     // 하트 완성 후 넘어가는 화면에 하트 모양 컨페티 효과
     function launchHeartConfetti() {
         var canvas = document.createElement('canvas');
@@ -1287,13 +1310,9 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         if (started) return;
         started = true;
 
-        // 오디오 재생 시도를 제스처 핸들러의 맨 첫 줄에서 실행 (아이폰 사파리가
-        // 제스처로 인정하는 확률을 최대화하기 위해, DOM 조작/컨페티보다 먼저 호출)
-        var audio = new Audio();
-        audio.src = 'bgm.mp3';
-        audio.loop = true;
-        audio.volume = 0.3;
-        window.bgmAudio = audio;
+        // 미리 언락해둔 오디오 엘리먼트를 재생 (DOM 조작/컨페티보다 먼저 호출해서
+        // 이 시점의 사용자 제스처와 최대한 가깝게 유지)
+        var audio = bgmAudio;
         var playPromise = audio.play();
 
         var opening = document.getElementById('opening');
@@ -1392,6 +1411,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
             if (started) return;
             e.preventDefault();
             e.stopPropagation();
+            unlockAudio();
             drawing = true;
             lastPos = getPos(e);
         }
