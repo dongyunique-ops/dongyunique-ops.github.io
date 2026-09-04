@@ -1198,18 +1198,6 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         if (img.complete) reveal();
     })();
 
-    // 히어로 배경 높이 고정 (모바일 주소창 접힘/펼침에 따라 스크롤 중 커지는 현상 방지)
-    (function() {
-        var hero = document.getElementById('hero');
-        function lockHeroHeight() {
-            hero.style.height = window.innerHeight + 'px';
-        }
-        lockHeroHeight();
-        window.addEventListener('orientationchange', function() {
-            setTimeout(lockHeroHeight, 300);
-        });
-    })();
-
     // 오프닝 하트 그리기 → 음악 시작 + 본문 표시
     var musicPlaying = false;
     var started = false;
