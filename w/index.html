@@ -310,23 +310,25 @@ section {
 .hero {
     padding: 0;
     position: relative;
-    height: 100vh;
+    width: 100%;
+    aspect-ratio: 472 / 965;
+    max-height: 965px;
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    background: url('hero_bg.jpg') center top / cover no-repeat;
-    background-attachment: scroll;
+    background: url('hero_bg.jpg') center center / cover no-repeat;
 }
 .hero::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(to bottom, rgba(255,255,255,0) 40%, rgba(255,255,255,0.85) 70%);
+    background: linear-gradient(to bottom, rgba(255,255,255,0) 55%, rgba(255,255,255,0.85) 88%);
 }
 .hero .inner {
     position: relative;
     z-index: 1;
     padding: 0 24px 80px;
+    text-align: center;
 }
 .hero-subtitle {
     font-family: 'Cormorant Garamond', serif;
