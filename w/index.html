@@ -1502,6 +1502,13 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         currentPhoto = (currentPhoto + 1) % photos.length;
         showPhoto();
     }
+    // PC에서 키보드로 사진첩 조작 (←/→ 이동, Esc 닫기)
+    document.addEventListener('keydown', function(e) {
+        if (!document.getElementById('lightbox').classList.contains('show')) return;
+        if (e.key === 'ArrowLeft') prevPhoto(e);
+        else if (e.key === 'ArrowRight') nextPhoto(e);
+        else if (e.key === 'Escape') closePhoto();
+    });
 
     // 스와이프 감지
     var lb = document.getElementById('lightbox');
