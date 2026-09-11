@@ -10,7 +10,7 @@
         if (/KAKAOTALK/i.test(ua)) {
             var url = location.href;
             if (/android/i.test(ua)) {
-                location.href = 'intent://' + url.replace(/^https?:\/\//i, '') + '#Intent;scheme=https;package=com.android.chrome;end';
+                location.href = 'intent://' + url.replace(/^https?:\/\//i, '') + '#Intent;scheme=https;S.browser_fallback_url=' + encodeURIComponent(url) + ';end';
             } else if (/iphone|ipad|ipod/i.test(ua)) {
                 location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(url);
             }
