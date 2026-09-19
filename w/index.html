@@ -451,8 +451,24 @@ section {
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     user-select: none;
+    overflow: hidden;
 }
 .gallery-item:hover { opacity: 0.8; }
+/* 가로 사진: 3칸 중 1.5칸씩 차지 → 2장이 한 행에 나란히 */
+.gallery-item.wide {
+    grid-column: span 3;
+    aspect-ratio: 3 / 2;
+}
+.gallery-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    grid-column: span 3;
+}
+.gallery-row-2 .gallery-item {
+    aspect-ratio: 3 / 2;
+    grid-column: auto;
+}
 .gallery-more {
     display: grid;
     grid-template-rows: 0fr;
@@ -990,13 +1006,15 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                             <div class="gallery-item" onclick="openPhoto('photo13.jpg')"><img src="photo13.jpg" alt="웨딩 사진 13" style="width:100%;height:100%;object-fit:cover;"></div>
                             <div class="gallery-item" onclick="openPhoto('photo14.jpg')"><img src="photo14.jpg" alt="웨딩 사진 14" style="width:100%;height:100%;object-fit:cover;"></div>
                             <div class="gallery-item" onclick="openPhoto('photo15.jpg')"><img src="photo15.jpg" alt="웨딩 사진 15" style="width:100%;height:100%;object-fit:cover;"></div>
-                            <div class="gallery-item" onclick="openPhoto('photo16.jpg')"><img src="photo16.jpg" alt="웨딩 사진 16" style="width:100%;height:100%;object-fit:cover;"></div>
-                            <div class="gallery-item" onclick="openPhoto('photo17.jpg')"><img src="photo17.jpg" alt="웨딩 사진 17" style="width:100%;height:100%;object-fit:cover;"></div>
+                            <div class="gallery-row-2">
+                                <div class="gallery-item" onclick="openPhoto('photo16.jpg')"><img src="photo16.jpg" alt="웨딩 사진 16" style="width:100%;height:100%;object-fit:cover;"></div>
+                                <div class="gallery-item" onclick="openPhoto('photo17.jpg')"><img src="photo17.jpg" alt="웨딩 사진 17" style="width:100%;height:100%;object-fit:cover;"></div>
+                            </div>
                             <div class="gallery-item" onclick="openPhoto('photo18.jpg')"><img src="photo18.jpg" alt="웨딩 사진 18" style="width:100%;height:100%;object-fit:cover;"></div>
                             <div class="gallery-item" onclick="openPhoto('photo19.jpg')"><img src="photo19.jpg" alt="웨딩 사진 19" style="width:100%;height:100%;object-fit:cover;"></div>
                             <div class="gallery-item" onclick="openPhoto('photo20.jpg')"><img src="photo20.jpg" alt="웨딩 사진 20" style="width:100%;height:100%;object-fit:cover;"></div>
                             <div class="gallery-item" onclick="openPhoto('photo21.jpg')"><img src="photo21.jpg" alt="웨딩 사진 21" style="width:100%;height:100%;object-fit:cover;"></div>
-                            <div class="gallery-item" onclick="openPhoto('photo22.jpg')"><img src="photo22.jpg" alt="웨딩 사진 22" style="width:100%;height:100%;object-fit:cover;"></div>
+                            <div class="gallery-item wide" onclick="openPhoto('photo22.jpg')"><img src="photo22.jpg" alt="웨딩 사진 22" style="width:100%;height:100%;object-fit:cover;"></div>
                         </div>
                     </div>
                 </div>
