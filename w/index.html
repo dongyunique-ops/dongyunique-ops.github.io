@@ -459,6 +459,11 @@ section {
     grid-column: span 3;
     aspect-ratio: 3 / 2;
 }
+/* 세로사진 옆 빈칸 채우기: 2칸 차지, 세로사진과 같은 높이 */
+.gallery-item.wide-2 {
+    grid-column: span 2;
+    aspect-ratio: 2 / 1;
+}
 .gallery-row-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1014,7 +1019,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
                             <div class="gallery-item" onclick="openPhoto('photo19.jpg')"><img src="photo19.jpg" alt="웨딩 사진 19" style="width:100%;height:100%;object-fit:cover;"></div>
                             <div class="gallery-item" onclick="openPhoto('photo20.jpg')"><img src="photo20.jpg" alt="웨딩 사진 20" style="width:100%;height:100%;object-fit:cover;"></div>
                             <div class="gallery-item" onclick="openPhoto('photo21.jpg')"><img src="photo21.jpg" alt="웨딩 사진 21" style="width:100%;height:100%;object-fit:cover;"></div>
-                            <div class="gallery-item wide" onclick="openPhoto('photo22.jpg')"><img src="photo22.jpg" alt="웨딩 사진 22" style="width:100%;height:100%;object-fit:cover;"></div>
+                            <div class="gallery-item wide-2" onclick="openPhoto('photo22.jpg')"><img src="photo22.jpg" alt="웨딩 사진 22" style="width:100%;height:100%;object-fit:cover;"></div>
                         </div>
                     </div>
                 </div>
