@@ -872,7 +872,16 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
     </style>
 </head>
 <body>
-    <!-- (오프닝 없음 - 바로 본문 시작) -->
+    <!-- Opening (하트 없음 - 사진+문구 후 자동으로 커튼 화면으로 전환) -->
+    <div class="opening" id="opening">
+        <div class="opening-bg-img"></div>
+        <div class="opening-overlay"></div>
+        <div class="opening-text">
+            <p class="op-line1">우리 결혼합니다</p>
+            <p class="op-names">동윤 &amp; 희은</p>
+            <p class="op-date">2026. 12. 12</p>
+        </div>
+    </div>
 
     <!-- (음악 없음) -->
 
@@ -1296,12 +1305,32 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         requestAnimationFrame(animate);
     }
 
-    // 오프닝/음악 없음 - 로드 시 모든 섹션 바로 표시 + 하트 컨페티 한 번
+    // 본문 섹션은 미리 표시 처리 (오프닝이 걷히면 바로 보이도록)
     window.addEventListener('load', function() {
         document.querySelectorAll('.fade-in').forEach(function(el){ el.classList.add('visible'); });
-        try { launchHeartConfetti(); } catch(e) {}
     });
     document.querySelectorAll('.fade-in').forEach(function(el){ el.classList.add('visible'); });
+
+    // 오프닝(사진+문구) → 자동으로 커튼 화면으로 전환 (하트 없음)
+    var openingClosed = false;
+    function closeOpening() {
+        if (openingClosed) return;
+        openingClosed = true;
+        var op = document.getElementById('opening');
+        if (op) op.classList.add('hide');
+        try { launchHeartConfetti(); } catch(e) {}
+        setTimeout(function(){ if (op) op.remove(); }, 1000);
+    }
+    // 문구가 모두 뜬 뒤(약 3.4초) 자동으로 커튼 화면으로 전환
+    window.addEventListener('load', function() {
+        setTimeout(closeOpening, 3400);
+    });
+    // 사용자가 먼저 탭하면 바로 넘어가게
+    (function(){
+        var op = document.getElementById('opening');
+        if (op) op.addEventListener('click', closeOpening);
+    })();
+
     function startWedding() {}
     function toggleMusic() {}
 
