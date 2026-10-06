@@ -872,27 +872,14 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
     </style>
 </head>
 <body>
-    <!-- Opening Animation -->
-    <div class="opening" id="opening" style="visibility:hidden;" onclick="startWedding()">
-        <div class="opening-bg-img"></div>
-        <div class="opening-overlay"></div>
-        <div class="opening-text">
-            <p class="op-line1">우리 결혼합니다</p>
-            <p class="op-names">동윤 &amp; 희은</p>
-            <p class="op-date">2026. 12. 12</p>
-            <p class="op-tap">화면을 터치해주세요 ♥</p>
-        </div>
-    </div>
+    <!-- (오프닝 없음 - 바로 본문 시작) -->
 
-    <!-- 음악 컨트롤 -->
-    <button class="music-btn" id="musicBtn" onclick="toggleMusic()" style="display:none;">
-        <span id="musicIcon">♪</span>
-    </button>
+    <!-- (음악 없음) -->
 
     <!-- Back Link -->
 
     <!-- Main Content -->
-    <main id="mainContent" style="opacity:0;visibility:hidden;transition:opacity 0.8s ease,visibility 0.8s ease;">
+    <main id="mainContent">
         <!-- Hero -->
         <section class="hero" id="hero">
             <div class="inner fade-in">
@@ -1322,59 +1309,12 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         requestAnimationFrame(animate);
     }
 
-    function startWedding() {
-        if (started) return;
-        started = true;
-        
-        var opening = document.getElementById('opening');
-        opening.classList.add('hide');
-        // 트랜지션 끝난 뒤 DOM에서 완전히 제거 (입력창 첫 포커스 방해 방지)
-        setTimeout(function() { opening.style.display = 'none'; }, 900);
-        var main = document.getElementById('mainContent');
-        main.style.opacity = '1';
-        main.style.visibility = 'visible';
-        document.getElementById('musicBtn').style.display = 'flex';
-        launchHeartConfetti();
-        
-        // Create audio fresh inside user gesture
-        var audio = new Audio();
-        audio.src = 'bgm.mp3';
-        audio.loop = true;
-        audio.volume = 0.3;
-        window.bgmAudio = audio;
-        audio.play().then(function() {
-            musicPlaying = true;
-            document.getElementById('musicBtn').classList.add('playing');
-        }).catch(function(e) {
-            console.log('play error:', e);
-            // QR스캐너 앱 등 일부 인앱 브라우저는 하트 그리기(터치 드래그) 제스처를
-            // 재생 허용 신호로 인식하지 못해 여기서 막힐 수 있음 → 다음 탭에서 재생 재시도
-            function retryPlay() {
-                document.removeEventListener('touchend', retryPlay);
-                document.removeEventListener('click', retryPlay);
-                audio.play().then(function() {
-                    musicPlaying = true;
-                    document.getElementById('musicBtn').classList.add('playing');
-                }).catch(function() {});
-            }
-            document.addEventListener('touchend', retryPlay, { once: true });
-            document.addEventListener('click', retryPlay, { once: true });
-        });
-    }
-
-    function toggleMusic() {
-        if (musicPlaying) {
-            window.bgmAudio.pause();
-            musicPlaying = false;
-            document.getElementById('musicBtn').classList.remove('playing');
-            document.getElementById('musicBtn').classList.add('muted');
-        } else {
-            window.bgmAudio.play();
-            musicPlaying = true;
-            document.getElementById('musicBtn').classList.add('playing');
-            document.getElementById('musicBtn').classList.remove('muted');
-        }
-    }
+    // 오프닝/음악 없음 - 페이지 로드 시 하트 컨페티만 한 번 재생
+    window.addEventListener('load', function() {
+        try { launchHeartConfetti(); } catch(e) {}
+    });
+    function startWedding() {}
+    function toggleMusic() {}
 
     // 백그라운드 재생 차단 - 페이지 안 보이면 정지 (파일 업로드 제외)
     var isPickingFile = false;
