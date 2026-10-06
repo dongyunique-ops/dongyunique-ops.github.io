@@ -1221,20 +1221,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         Kakao.init('1b9581fd4ebc38cc9eeffb3f74e88047');
     }
 
-    // 오프닝 배경 사진(cover.jpg)이 완전히 로드된 뒤에만 오프닝 화면을 보여줌.
-    // 그 전에 미리 보여주면 사진이 뜨기 전 회색 플레이스홀더 + 어두운 오버레이가
-    // 겹쳐서 잠깐 검은 화면처럼 보였다가 사진이 나오는 것처럼 느껴짐.
-    (function() {
-        var opening = document.getElementById('opening');
-        function reveal() { opening.style.visibility = 'visible'; }
-        var img = new Image();
-        img.onload = reveal;
-        img.onerror = reveal;
-        img.src = 'cover.jpg';
-        if (img.complete) reveal();
-    })();
-
-    // 오프닝 하트 그리기 → 음악 시작 + 본문 표시
+    // (오프닝 없음)
     var musicPlaying = false;
     var started = false;
 
