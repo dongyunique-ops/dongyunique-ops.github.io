@@ -140,9 +140,9 @@ section {
     color: #fff;
     text-shadow: 0 1px 8px rgba(0,0,0,0.3);
 }
-.opening-text .op-line1 { animation-delay: 0.3s; font-size: 16px; font-weight: 300; letter-spacing: 2px; }
-.opening-text .op-names { animation-delay: 1.0s; font-size: 28px; font-weight: 600; letter-spacing: 3px; }
-.opening-text .op-date { animation-delay: 1.7s; font-size: 13px; font-weight: 300; letter-spacing: 2px; color: rgba(255,255,255,0.85); }
+.opening-text .op-line1 { animation-delay: 0.2s; font-size: 22px; font-weight: 300; letter-spacing: 3px; }
+.opening-text .op-names { animation-delay: 0.6s; font-size: 36px; font-weight: 600; letter-spacing: 4px; }
+.opening-text .op-date { animation-delay: 1.0s; font-size: 18px; font-weight: 300; letter-spacing: 3px; color: rgba(255,255,255,0.9); }
 .opening-text .op-tap {
     animation-delay: 2.5s;
     font-size: 12px;
@@ -1321,9 +1321,9 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         try { launchHeartConfetti(); } catch(e) {}
         setTimeout(function(){ if (op) op.remove(); }, 1000);
     }
-    // 문구가 모두 뜬 뒤(약 3.4초) 자동으로 커튼 화면으로 전환
+    // 문구가 모두 뜬 뒤 자동으로 커튼 화면으로 전환
     window.addEventListener('load', function() {
-        setTimeout(closeOpening, 3400);
+        setTimeout(closeOpening, 2300);
     });
     // 사용자가 먼저 탭하면 바로 넘어가게
     (function(){
