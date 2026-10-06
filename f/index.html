@@ -98,17 +98,17 @@ section {
 /* Opening */
 .opening {
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 9999;
     transition: opacity 0.8s ease, visibility 0.8s ease;
     cursor: pointer;
-    max-width: 480px;
-    margin: 0 auto;
-    height: 100vh;
-    height: 100dvh;
+    overflow: hidden;
 }
 .opening.hide {
     opacity: 0;
@@ -118,7 +118,7 @@ section {
 .opening-bg-img {
     position: absolute;
     inset: 0;
-    background: #898583 url('cover.jpg') center center / cover no-repeat;
+    background: #898583 url('cover.jpg') center 30% / cover no-repeat;
     image-rendering: auto;
     -webkit-image-rendering: auto;
 }
