@@ -1309,10 +1309,12 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         requestAnimationFrame(animate);
     }
 
-    // 오프닝/음악 없음 - 페이지 로드 시 하트 컨페티만 한 번 재생
+    // 오프닝/음악 없음 - 로드 시 모든 섹션 바로 표시 + 하트 컨페티 한 번
     window.addEventListener('load', function() {
+        document.querySelectorAll('.fade-in').forEach(function(el){ el.classList.add('visible'); });
         try { launchHeartConfetti(); } catch(e) {}
     });
+    document.querySelectorAll('.fade-in').forEach(function(el){ el.classList.add('visible'); });
     function startWedding() {}
     function toggleMusic() {}
 
