@@ -886,7 +886,10 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         </div>
     </div>
 
-    <!-- (음악 없음) -->
+    <!-- 음악 컨트롤 -->
+    <button class="music-btn" id="musicBtn" onclick="toggleMusic()" style="display:none;">
+        <span id="musicIcon">♪</span>
+    </button>
 
     <!-- Back Link -->
 
@@ -1314,7 +1317,7 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
     });
     document.querySelectorAll('.fade-in').forEach(function(el){ el.classList.add('visible'); });
 
-    // 오프닝(사진+문구) → 자동으로 커튼 화면으로 전환 (하트 없음)
+    // 오프닝(사진+문구) → 자동으로 커튼 화면으로 전환 + 음악 재생
     var openingClosed = false;
     function closeOpening() {
         if (openingClosed) return;
@@ -1323,19 +1326,56 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         if (op) op.classList.add('hide');
         try { launchHeartConfetti(); } catch(e) {}
         setTimeout(function(){ if (op) op.remove(); }, 1000);
+
+        // 음악 시작
+        document.getElementById('musicBtn').style.display = 'flex';
+        var audio = new Audio();
+        audio.src = 'bgm.mp3';
+        audio.loop = true;
+        audio.volume = 0.3;
+        window.bgmAudio = audio;
+        audio.play().then(function() {
+            musicPlaying = true;
+            document.getElementById('musicBtn').classList.add('playing');
+        }).catch(function(e) {
+            // 자동재생 차단된 경우 → 첫 터치/클릭 시 재생
+            function retryPlay() {
+                document.removeEventListener('touchend', retryPlay);
+                document.removeEventListener('click', retryPlay);
+                audio.play().then(function() {
+                    musicPlaying = true;
+                    document.getElementById('musicBtn').classList.add('playing');
+                }).catch(function() {});
+            }
+            document.addEventListener('touchend', retryPlay, { once: true });
+            document.addEventListener('click', retryPlay, { once: true });
+        });
     }
     // 문구가 모두 뜬 뒤 자동으로 커튼 화면으로 전환
     window.addEventListener('load', function() {
         setTimeout(closeOpening, 2300);
     });
-    // 사용자가 먼저 탭하면 바로 넘어가게
+    // 사용자가 먼저 탭하면 바로 넘어가게 (터치 = 사용자 제스처 → 음악 재생 가능)
     (function(){
         var op = document.getElementById('opening');
         if (op) op.addEventListener('click', closeOpening);
     })();
 
     function startWedding() {}
-    function toggleMusic() {}
+
+    function toggleMusic() {
+        if (musicPlaying) {
+            window.bgmAudio.pause();
+            musicPlaying = false;
+            document.getElementById('musicBtn').classList.remove('playing');
+            document.getElementById('musicBtn').classList.add('muted');
+        } else {
+            window.bgmAudio.play();
+            musicPlaying = true;
+            document.getElementById('musicBtn').classList.add('playing');
+            document.getElementById('musicBtn').classList.remove('muted');
+        }
+    }
 
     // 백그라운드 재생 차단 - 페이지 안 보이면 정지 (파일 업로드 제외)
     var isPickingFile = false;
