@@ -900,6 +900,461 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
     font-size: 12px;
 }
     </style>
+    <style id="rsvp-style">
+/* =========================================================
+   참석 여부 전달 (RSVP) — 1) 스크롤 안내 팝업  2) 입력 시트
+   입력창이 들어있는 시트에는 opacity/transform 트랜지션을 쓰지 않음
+   (아이폰 사파리 첫 탭 포커스 씹힘 방지 — 방명록과 같은 원칙)
+   ========================================================= */
+html.rsvp-lock { overflow: hidden; scrollbar-gutter: stable; }
+body.rsvp-lock { overflow: hidden; }
+.rsvp-layer[hidden] { display: none !important; }
+.rsvp-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 9999; /* 하트 컨페티(9998) 위, 토스트(10000) 아래 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    -webkit-tap-highlight-color: transparent;
+    word-break: keep-all;
+}
+.rsvp-dim {
+    position: absolute;
+    inset: 0;
+    background: rgba(28, 22, 24, 0.55);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.rsvp-layer.is-open .rsvp-dim { opacity: 1; }
+.rsvp-layer.keep-dim .rsvp-dim { opacity: 1; transition: none; }
+.rsvp-x {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    color: #9a9a9a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2;
+}
+.rsvp-x svg { width: 20px; height: 20px; }
+.rsvp-x:active { background: #f4f4f4; }
+.rsvp-eyebrow {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 4px;
+    color: #a3a3a3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+.rsvp-eyebrow::before, .rsvp-eyebrow::after {
+    content: '';
+    width: 28px;
+    height: 1px;
+    background: #e3e3e3;
+}
+
+/* ---------- 1) 안내 팝업 ---------- */
+.rsvp-card {
+    position: relative;
+    width: 100%;
+    max-width: 340px;
+    max-height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: #fff;
+    border-radius: 18px;
+    padding: 40px 24px 16px;
+    text-align: center;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
+    outline: none;
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+    transition: opacity 0.35s ease, transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.rsvp-layer.is-open .rsvp-card { opacity: 1; transform: none; }
+.rsvp-layer.is-leaving .rsvp-card {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+    transition-duration: 0.22s;
+}
+.rsvp-title {
+    font-size: 19px;
+    font-weight: 600;
+    color: #222;
+    letter-spacing: -0.2px;
+    margin-bottom: 16px;
+}
+.rsvp-lead {
+    font-size: 14px;
+    line-height: 1.9;
+    color: #555;
+}
+.rsvp-divider {
+    border: 0;
+    border-top: 1px dashed #e2e2e2;
+    margin: 22px 0 20px;
+}
+.rsvp-info {
+    list-style: none;
+    display: inline-flex;
+    flex-direction: column;
+    gap: 11px;
+    max-width: 100%;
+    text-align: left;
+    font-size: 14px;
+    line-height: 1.55;
+    color: #444;
+}
+.rsvp-info li { display: flex; gap: 10px; align-items: flex-start; }
+.rsvp-info svg { flex-shrink: 0; width: 17px; height: 17px; margin-top: 2px; color: #bcbcbc; }
+.rsvp-info small { display: block; font-size: 12.5px; color: #999; }
+.rsvp-groom { color: #7089a6; font-weight: 500; }
+.rsvp-bride { color: #bd7c86; font-weight: 500; }
+.rsvp-cta {
+    display: block;
+    width: 100%;
+    margin-top: 26px;
+    padding: 16px;
+    border: 0;
+    border-radius: 14px;
+    background: #e0a3b4;
+    color: #fff;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(224, 163, 180, 0.35);
+    transition: background 0.2s;
+}
+.rsvp-cta:hover, .rsvp-cta:active { background: #d18fa2; }
+.rsvp-today {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+    padding: 8px 10px;
+    border: 0;
+    background: none;
+    font-family: inherit;
+    font-size: 13px;
+    color: #aaa;
+    cursor: pointer;
+}
+.rsvp-today svg { width: 18px; height: 18px; }
+.rsvp-today .ck-circle { stroke: #d2d2d2; fill: none; transition: fill 0.15s, stroke 0.15s; }
+.rsvp-today .ck-mark { stroke: #d2d2d2; transition: stroke 0.15s; }
+.rsvp-today.is-checked { color: #888; }
+.rsvp-today.is-checked .ck-circle { stroke: #e0a3b4; fill: #e0a3b4; }
+.rsvp-today.is-checked .ck-mark { stroke: #fff; }
+
+/* ---------- 2) 입력 시트 ---------- */
+.rsvp-form-layer { padding: 0; }
+.rsvp-sheet {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 480px;
+    height: 100%;
+    background: #fff;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    outline: none;
+    pointer-events: none;
+    transition: top 0.42s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.rsvp-form-layer.is-open .rsvp-sheet { top: 0; }
+/* 다 올라온 뒤에는 트랜지션 흔적을 완전히 없앰 */
+.rsvp-form-layer.is-settled .rsvp-sheet { transition: none; pointer-events: auto; }
+.rsvp-form-layer.is-closing .rsvp-sheet {
+    top: 100%;
+    pointer-events: none;
+    transition: top 0.32s cubic-bezier(0.4, 0, 0.7, 0.2);
+}
+.rsvp-form-layer.from-intro .rsvp-dim { opacity: 0; transition: none; }
+.rsvp-form-layer.is-settled .rsvp-dim { transition: none; }
+.rsvp-form-layer.is-closing .rsvp-dim { opacity: 0; transition: opacity 0.3s ease; }
+.rsvp-sheet-head {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border-bottom: 1px solid #f0f0f0;
+}
+.rsvp-sheet-head h2 { font-size: 16px; font-weight: 600; color: #222; }
+.rsvp-sheet-head .rsvp-x { top: 6px; right: 6px; }
+.rsvp-body { padding: 30px 24px 40px; text-align: left; }
+.rsvp-intro { text-align: center; margin-bottom: 32px; }
+.rsvp-intro p { font-size: 13px; line-height: 1.8; color: #888; }
+.rsvp-intro .rsvp-eyebrow { margin-bottom: 12px; }
+.rsvp-intro .rsvp-note { margin-top: 6px; font-size: 12px; color: #b3b3b3; }
+.rsvp-field { margin-bottom: 26px; }
+.rsvp-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 10px;
+}
+.rsvp-label .req { color: #d98ba0; font-style: normal; margin-left: 3px; }
+.rsvp-label .opt { color: #aaa; font-size: 12px; font-weight: 400; margin-left: 4px; }
+.rsvp-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.rsvp-options.three { grid-template-columns: repeat(3, 1fr); }
+.rsvp-opt { position: relative; display: block; cursor: pointer; }
+.rsvp-opt input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    pointer-events: none;
+}
+.rsvp-opt span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 52px;
+    padding: 0 6px;
+    border: 1px solid #e9e9e9;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    color: #777;
+    font-size: 15px;
+    font-weight: 500;
+    white-space: nowrap;
+    -webkit-user-select: none;
+    user-select: none;
+    transition: border-color 0.15s, background-color 0.15s, color 0.15s;
+}
+.rsvp-opt span::before {
+    content: '';
+    width: 0;
+    height: 14px;
+    margin-right: 0;
+    background: #e0a3b4;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / contain no-repeat;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / contain no-repeat;
+    transition: width 0.15s, margin-right 0.15s;
+}
+.rsvp-opt input:checked + span {
+    border-color: #e0a3b4;
+    background: #fdf4f6;
+    color: #222;
+    font-weight: 600;
+}
+.rsvp-opt input:checked + span::before { width: 14px; margin-right: 5px; }
+.rsvp-opt--groom input:checked + span { border-color: #7089a6; background: #f3f6fa; color: #3f5873; }
+.rsvp-opt--groom input:checked + span::before { background: #7089a6; }
+.rsvp-opt--bride input:checked + span { border-color: #bd7c86; background: #fbf3f4; color: #94505b; }
+.rsvp-opt--bride input:checked + span::before { background: #bd7c86; }
+.rsvp-opt input:focus-visible + span { outline: 2px solid #e0a3b4; outline-offset: 2px; }
+.rsvp-input, .rsvp-textarea {
+    display: block;
+    width: 100%;
+    border: 1px solid #eee;
+    border-radius: 14px;
+    padding: 15px 18px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    font-family: inherit;
+    font-size: 16px; /* 16px 미만이면 아이폰이 확대하면서 첫 글자가 씹힘 */
+    color: #222;
+    -webkit-appearance: none;
+    appearance: none;
+    position: relative;
+    z-index: 1;
+    pointer-events: auto;
+    -webkit-user-select: text;
+    user-select: text;
+    touch-action: manipulation;
+}
+.rsvp-input::placeholder, .rsvp-textarea::placeholder { color: #bbb; font-size: 15px; }
+.rsvp-input:focus, .rsvp-textarea:focus { outline: none; border-color: #ccc; }
+.rsvp-textarea { height: 120px; resize: none; line-height: 1.6; }
+.rsvp-count { margin-top: 6px; text-align: right; font-size: 11px; color: #bbb; }
+.rsvp-stepper {
+    display: grid;
+    grid-template-columns: 60px 1fr 60px;
+    align-items: center;
+    height: 52px;
+    border: 1px solid #eee;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+.rsvp-step {
+    height: 100%;
+    border: 0;
+    background: none;
+    color: #8a8a8a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.rsvp-step svg { width: 24px; height: 24px; }
+.rsvp-step:disabled { color: #dedede; cursor: default; }
+.rsvp-step:not(:disabled):active { background: #f8f8f8; }
+.rsvp-count-val { text-align: center; font-size: 17px; font-weight: 600; color: #222; }
+.rsvp-count-val small { margin-left: 2px; font-size: 13px; font-weight: 400; color: #888; }
+.rsvp-cond {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows 0.3s ease, opacity 0.25s ease;
+}
+.rsvp-cond > div { min-height: 0; overflow: hidden; margin: 0 -6px; padding: 0 6px; }
+.rsvp-cond.is-collapsed { grid-template-rows: 0fr; opacity: 0; }
+.rsvp-agree-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.rsvp-agree {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: #444;
+    cursor: pointer;
+}
+.rsvp-agree input {
+    -webkit-appearance: none;
+    appearance: none;
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    margin: 0;
+    border: 1.5px solid #d0d0d0;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+.rsvp-agree input:checked {
+    border-color: #e0a3b4;
+    background: #e0a3b4 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / 15px no-repeat;
+}
+.rsvp-agree input:focus-visible { outline: 2px solid #e0a3b4; outline-offset: 2px; }
+.rsvp-agree .req-text { color: #d98ba0; font-size: 12px; }
+.rsvp-more {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 8px 0 8px 8px;
+    border: 0;
+    background: none;
+    font-family: inherit;
+    font-size: 12px;
+    color: #999;
+    cursor: pointer;
+}
+.rsvp-more svg { width: 14px; height: 14px; transition: transform 0.2s; }
+.rsvp-more[aria-expanded="true"] svg { transform: rotate(180deg); }
+.rsvp-terms { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.3s ease; }
+.rsvp-terms.is-open { grid-template-rows: 1fr; }
+.rsvp-terms > div { min-height: 0; overflow: hidden; }
+.rsvp-terms ul {
+    list-style: none;
+    margin-top: 10px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: #f8f8f8;
+    font-size: 12px;
+    line-height: 1.75;
+    color: #777;
+}
+.rsvp-terms b { display: inline-block; min-width: 56px; color: #555; font-weight: 600; }
+.rsvp-terms li + li { margin-top: 2px; }
+.rsvp-err { display: none; margin-top: 8px; font-size: 12px; color: #c2566e; }
+.rsvp-field.is-error .rsvp-err { display: block; }
+.rsvp-field.is-error .rsvp-opt span,
+.rsvp-field.is-error .rsvp-input,
+.rsvp-field.is-error .rsvp-agree input { border-color: #eab0bd; }
+.rsvp-formmsg {
+    display: none;
+    margin-top: 6px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #fbf1f3;
+    color: #b0566b;
+    font-size: 13px;
+    line-height: 1.6;
+    text-align: center;
+    white-space: pre-line;
+}
+.rsvp-formmsg.show { display: block; }
+.rsvp-submit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 28px;
+    padding: 17px;
+    border: 0;
+    border-radius: 14px;
+    background: #e0a3b4;
+    color: #fff;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(224, 163, 180, 0.3);
+    transition: background 0.2s;
+}
+.rsvp-submit:hover, .rsvp-submit:active { background: #d18fa2; }
+.rsvp-submit[disabled] { opacity: 0.75; cursor: default; }
+.rsvp-spinner {
+    display: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.45);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+.rsvp-submit.is-loading .rsvp-spinner { display: inline-block; }
+.rsvp-done { display: none; padding: 72px 28px 48px; text-align: center; }
+.rsvp-sheet.is-done .rsvp-body { display: none; }
+.rsvp-sheet.is-done .rsvp-done { display: block; animation: rsvpFadeUp 0.5s ease both; }
+.rsvp-done-icon { width: 72px; height: 72px; margin: 0 auto 24px; display: block; }
+.rsvp-done-icon circle { stroke: #f3d9e0; }
+.rsvp-done-icon path { stroke: #e0a3b4; stroke-dasharray: 40; stroke-dashoffset: 40; }
+.rsvp-sheet.is-done .rsvp-done-icon path { animation: rsvpDraw 0.6s 0.25s ease forwards; }
+.rsvp-done h3 { margin-bottom: 12px; font-size: 19px; font-weight: 600; color: #222; }
+.rsvp-done p { font-size: 14px; line-height: 1.85; color: #777; }
+.rsvp-summary { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 26px 0 34px; }
+.rsvp-summary span { padding: 6px 12px; border-radius: 999px; background: #f6f6f6; font-size: 12.5px; color: #666; }
+.rsvp-done .rsvp-submit { margin-top: 0; }
+@keyframes rsvpFadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
+}
+@keyframes rsvpDraw { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) {
+    .rsvp-dim, .rsvp-card, .rsvp-sheet, .rsvp-cond, .rsvp-terms { transition: none !important; }
+    .rsvp-sheet.is-done .rsvp-done { animation: none; }
+    .rsvp-sheet.is-done .rsvp-done-icon path { animation: none; stroke-dashoffset: 0; }
+}
+    </style>
 </head>
 <body>
     <!-- Opening (사진+문구+하트 자동 애니메이션 후 커튼 화면 전환) -->
@@ -1259,6 +1714,148 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
         <div class="lightbox-arrow lightbox-next" onclick="nextPhoto(event)">&#10095;</div>
         <div class="lightbox-counter" id="lightbox-counter"></div>
     </div>
+    <!-- ===== 참석 여부 전달 (RSVP) ===== -->
+    <!-- 1) 스크롤하면 뜨는 안내 팝업 -->
+    <div class="rsvp-layer" id="rsvpIntro" hidden>
+        <div class="rsvp-dim" data-rsvp="close"></div>
+        <div class="rsvp-card" role="dialog" aria-modal="true" aria-labelledby="rsvpIntroTitle" tabindex="-1">
+            <button type="button" class="rsvp-x" data-rsvp="close" aria-label="닫기">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+            <p class="rsvp-eyebrow">R.S.V.P</p>
+            <h2 class="rsvp-title" id="rsvpIntroTitle">참석 여부 전달</h2>
+            <p class="rsvp-lead">귀한 시간 내어 축하해 주시는 분들께<br>부족함 없는 자리를 준비하고자 합니다.<br>참석 여부를 미리 알려주시면<br>더욱 정성껏 모시겠습니다.</p>
+            <hr class="rsvp-divider">
+            <ul class="rsvp-info">
+                <li>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.35-8.9-8.6C1.8 8.3 3.7 5 7 5c2 0 3.7 1.1 5 3 1.3-1.9 3-3 5-3 3.3 0 5.2 3.3 3.9 6.4C19 15.65 12 20 12 20z"/></svg>
+                    <span><span class="rsvp-groom">신랑</span> 김동윤 · <span class="rsvp-bride">신부</span> 김희은</span>
+                </li>
+                <li>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>
+                    <span>2026년 12월 12일 토요일 오후 2시</span>
+                </li>
+                <li>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>
+                    <span>엘로라 인 가든<small>서울 송파구 충민로 52 가든파이브웍스&nbsp;1층</small></span>
+                </li>
+            </ul>
+            <button type="button" class="rsvp-cta" data-rsvp="open-form">참석 여부 전달하기</button>
+            <button type="button" class="rsvp-today" data-rsvp="today">
+                <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle class="ck-circle" cx="12" cy="12" r="9.5"/><path class="ck-mark" fill="none" d="M8 12.3l2.7 2.7 5.5-5.4"/></svg>
+                오늘 하루 보지 않기
+            </button>
+        </div>
+    </div>
+
+    <!-- 2) 참석 여부 입력 시트 -->
+    <div class="rsvp-layer rsvp-form-layer" id="rsvpForm" hidden>
+        <div class="rsvp-dim"></div>
+        <div class="rsvp-sheet" id="rsvpSheet" role="dialog" aria-modal="true" aria-labelledby="rsvpFormTitle" tabindex="-1">
+            <div class="rsvp-sheet-head">
+                <h2 id="rsvpFormTitle">참석 여부 전달</h2>
+                <button type="button" class="rsvp-x" data-rsvp="close" aria-label="닫기">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                </button>
+            </div>
+            <form class="rsvp-body" id="rsvpFormEl" novalidate autocomplete="off">
+                <div class="rsvp-intro">
+                    <p class="rsvp-eyebrow">R.S.V.P</p>
+                    <p>원활한 예식 준비를 위해<br>참석 정보를 미리 알려주시면 감사하겠습니다.</p>
+                    <p class="rsvp-note">작성해 주신 내용은 신랑·신부에게만 전달됩니다.</p>
+                </div>
+
+                <div class="rsvp-field" data-field="side">
+                    <span class="rsvp-label" id="rsvpSideLabel">어느 측 하객이신가요?<em class="req">*</em></span>
+                    <div class="rsvp-options" role="radiogroup" aria-labelledby="rsvpSideLabel">
+                        <label class="rsvp-opt rsvp-opt--groom"><input type="radio" name="side" value="신랑측"><span>신랑측</span></label>
+                        <label class="rsvp-opt rsvp-opt--bride"><input type="radio" name="side" value="신부측"><span>신부측</span></label>
+                    </div>
+                    <p class="rsvp-err">신랑측 · 신부측 중 선택해 주세요</p>
+                </div>
+
+                <div class="rsvp-field" data-field="attend">
+                    <span class="rsvp-label" id="rsvpAttendLabel">참석 여부<em class="req">*</em></span>
+                    <div class="rsvp-options" role="radiogroup" aria-labelledby="rsvpAttendLabel">
+                        <label class="rsvp-opt"><input type="radio" name="attend" value="참석"><span>참석</span></label>
+                        <label class="rsvp-opt"><input type="radio" name="attend" value="불참"><span>불참</span></label>
+                    </div>
+                    <p class="rsvp-err">참석 여부를 선택해 주세요</p>
+                </div>
+
+                <div class="rsvp-field" data-field="guest">
+                    <label class="rsvp-label" for="rsvpGuest">성함<em class="req">*</em></label>
+                    <input class="rsvp-input" type="text" id="rsvpGuest" name="guest" maxlength="20" placeholder="성함을 입력해 주세요" autocomplete="name" enterkeyhint="done">
+                    <p class="rsvp-err">성함을 입력해 주세요</p>
+                </div>
+
+                <!-- 참석일 때만 보이는 항목 (불참 선택 시 접힘) -->
+                <div class="rsvp-cond" id="rsvpCond">
+                    <div>
+                        <div class="rsvp-field" data-field="companions">
+                            <span class="rsvp-label" id="rsvpCompLabel">동행인 수<span class="opt">(본인 제외)</span></span>
+                            <div class="rsvp-stepper" role="group" aria-labelledby="rsvpCompLabel">
+                                <button type="button" class="rsvp-step" data-step="-1" aria-label="동행인 한 명 줄이기">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M8 12h8"/></svg>
+                                </button>
+                                <output class="rsvp-count-val" id="rsvpCompVal" aria-live="polite">0<small>명</small></output>
+                                <button type="button" class="rsvp-step" data-step="1" aria-label="동행인 한 명 늘리기">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M8 12h8M12 8v8"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="rsvp-field" data-field="meal">
+                            <span class="rsvp-label" id="rsvpMealLabel">식사 여부<em class="req">*</em></span>
+                            <div class="rsvp-options three" role="radiogroup" aria-labelledby="rsvpMealLabel">
+                                <label class="rsvp-opt"><input type="radio" name="meal" value="식사 예정"><span>식사 예정</span></label>
+                                <label class="rsvp-opt"><input type="radio" name="meal" value="식사 안 함"><span>식사 안 함</span></label>
+                                <label class="rsvp-opt"><input type="radio" name="meal" value="미정"><span>미정</span></label>
+                            </div>
+                            <p class="rsvp-err">식사 여부를 선택해 주세요</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rsvp-field" data-field="memo">
+                    <label class="rsvp-label" for="rsvpMemo">전달사항<span class="opt">(선택)</span></label>
+                    <textarea class="rsvp-textarea" id="rsvpMemo" name="memo" maxlength="200" placeholder="신랑·신부에게 전하실 말씀을 남겨주세요"></textarea>
+                    <p class="rsvp-count"><span id="rsvpMemoCount">0</span> / 200</p>
+                </div>
+
+                <div class="rsvp-field" data-field="agree">
+                    <div class="rsvp-agree-row">
+                        <label class="rsvp-agree"><input type="checkbox" id="rsvpAgree" name="agree">개인정보 수집 및 이용 동의 <span class="req-text">(필수)</span></label>
+                        <button type="button" class="rsvp-more" aria-expanded="false" aria-controls="rsvpTerms">자세히
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 10l5 5 5-5"/></svg>
+                        </button>
+                    </div>
+                    <div class="rsvp-terms" id="rsvpTerms">
+                        <div>
+                            <ul>
+                                <li><b>수집 항목</b> 성함, 참석·식사 여부, 동행인 수, 전달사항</li>
+                                <li><b>이용 목적</b> 예식 참석 인원 확인 및 식사 준비</li>
+                                <li><b>보관 기간</b> 예식일로부터 1개월 후 파기</li>
+                                <li>동의하지 않으실 수 있으며, 이 경우 참석 여부 전달이 어렵습니다.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <p class="rsvp-err">개인정보 수집 및 이용에 동의해 주세요</p>
+                </div>
+
+                <p class="rsvp-formmsg" id="rsvpFormMsg" role="alert"></p>
+                <button type="submit" class="rsvp-submit" id="rsvpSubmit"><span class="rsvp-spinner" aria-hidden="true"></span><span class="rsvp-submit-text">참석 여부 전달하기</span></button>
+            </form>
+
+            <div class="rsvp-done" id="rsvpDone" aria-live="polite">
+                <svg class="rsvp-done-icon" viewBox="0 0 72 72" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="36" cy="36" r="33"/><path d="M23 37.5l9 9 17-19"/></svg>
+                <h3>소중한 회신 감사합니다</h3>
+                <p id="rsvpDoneMsg"></p>
+                <div class="rsvp-summary" id="rsvpSummary"></div>
+                <button type="button" class="rsvp-submit" data-rsvp="close">확인</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Kakao SDK -->
     <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js"></script>
     <script>
@@ -1941,6 +2538,409 @@ footer a { color: #888; text-decoration: none; margin-top: 8px; display: inline-
 
     // Init messages
     renderMessages();
+    </script>
+    <script>
+    /* ============================================================
+       참석 여부 전달 (RSVP)
+       1) 오프닝이 걷힌 뒤 스크롤하면 안내 팝업(#rsvpIntro)이 한 번 뜸
+       2) '참석 여부 전달하기' → 입력 시트(#rsvpForm)
+       - 방명록과 같은 Apps Script(SCRIPT_URL)로 type:'rsvp' 전송 → 시트 '참석여부' 탭
+       - 저장 전 ?type=rsvp_ping 으로 스크립트 새 버전이 배포됐는지 먼저 확인
+         (배포 전이면 전송하지 않음 → 방명록에 섞이는 일 방지)
+       - '오늘 하루 보지 않기' = 24시간 / 제출을 마친 기기에서는 다시 안 뜸
+       - 미리보기: 주소 뒤에 ?rsvp=test 를 붙이면 위 조건을 무시하고 띄움
+       ============================================================ */
+    (function () {
+        'use strict';
+        var RSVP_PAGE = 'f';                               // 시트 '링크' 열에 기록 (f / w 구분)
+        var RSVP_URL = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : '';
+        var WEDDING_AT = new Date('2026-12-12T14:00:00+09:00').getTime();
+        var KEY_HIDE = 'rsvp_hide_until';
+        var KEY_DONE = 'rsvp_done';
+        var HIDE_MS = 24 * 60 * 60 * 1000;
+        var TEST_MODE = /[?&]rsvp=test\b/.test(location.search);
+
+        var intro = document.getElementById('rsvpIntro');
+        var layer = document.getElementById('rsvpForm');
+        if (!intro || !layer) return;
+        var card = intro.querySelector('.rsvp-card');
+        var sheet = document.getElementById('rsvpSheet');
+        var formEl = document.getElementById('rsvpFormEl');
+        var cond = document.getElementById('rsvpCond');
+        var guestEl = document.getElementById('rsvpGuest');
+        var memoEl = document.getElementById('rsvpMemo');
+        var memoCount = document.getElementById('rsvpMemoCount');
+        var agreeEl = document.getElementById('rsvpAgree');
+        var compVal = document.getElementById('rsvpCompVal');
+        var stepDown = layer.querySelector('[data-step="-1"]');
+        var stepUp = layer.querySelector('[data-step="1"]');
+        var submitBtn = document.getElementById('rsvpSubmit');
+        var submitText = submitBtn.querySelector('.rsvp-submit-text');
+        var formMsg = document.getElementById('rsvpFormMsg');
+        var termsBtn = layer.querySelector('.rsvp-more');
+        var terms = document.getElementById('rsvpTerms');
+        var reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        var companions = 0;
+        var sending = false;
+
+        /* ---------- 저장소 (사파리 개인정보 보호 모드 등에서 막혀도 동작하게) ---------- */
+        function getItem(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+        function setItem(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+        function isSuppressed() {
+            if (TEST_MODE) return false;
+            if (getItem(KEY_DONE)) return true;
+            var until = parseInt(getItem(KEY_HIDE) || '0', 10);
+            return !!until && Date.now() < until;
+        }
+
+        /* ---------- 팝업이 떠 있는 동안 뒤 페이지 스크롤 잠금 ---------- */
+        var lockDepth = 0, savedY = 0;
+        function getScrollY() { return window.pageYOffset || document.documentElement.scrollTop || 0; }
+        function lockScroll() {
+            if (lockDepth++ > 0) return;
+            savedY = getScrollY();
+            document.documentElement.classList.add('rsvp-lock');
+            document.body.classList.add('rsvp-lock');
+        }
+        function unlockScroll() {
+            if (lockDepth === 0 || --lockDepth > 0) return;
+            document.documentElement.classList.remove('rsvp-lock');
+            document.body.classList.remove('rsvp-lock');
+            if (Math.abs(getScrollY() - savedY) > 2) window.scrollTo(0, savedY);
+        }
+
+        /* ---------- 뒤로가기(안드로이드 back · 아이폰 스와이프)는 팝업만 닫게 ---------- */
+        var historyArmed = false, skipPop = false;
+        function armHistory() {
+            if (historyArmed) return;
+            try { history.pushState({ rsvp: true }, ''); historyArmed = true; } catch (e) {}
+        }
+        function disarmHistory() {
+            if (!historyArmed) return;
+            historyArmed = false;
+            if (history.state && history.state.rsvp) { skipPop = true; history.back(); }
+        }
+        window.addEventListener('popstate', function () {
+            if (skipPop) { skipPop = false; return; }
+            if (!historyArmed) return;
+            historyArmed = false;
+            if (!layer.hidden) closeForm(true);
+            else if (!intro.hidden) closeIntro(true);
+        });
+
+        /* ---------- 1) 안내 팝업 ---------- */
+        var introShown = false;
+        function openIntro() {
+            if (!intro.hidden) return;
+            introShown = true;
+            window.removeEventListener('scroll', onScroll);
+            lockScroll();
+            armHistory();
+            intro.classList.remove('is-open', 'is-leaving', 'keep-dim');
+            intro.hidden = false;
+            void intro.offsetWidth;                         // 첫 프레임을 확정한 뒤 전환 시작
+            intro.classList.add('is-open');
+            try { card.focus({ preventScroll: true }); } catch (e) {}
+        }
+        function hideIntroNow() {
+            intro.hidden = true;
+            intro.classList.remove('is-open', 'is-leaving', 'keep-dim');
+            var today = intro.querySelector('.rsvp-today');
+            if (today) today.classList.remove('is-checked');
+        }
+        function closeIntro(fromHistory) {
+            if (intro.hidden || intro.classList.contains('is-leaving')) return;
+            intro.classList.remove('is-open');
+            intro.classList.add('is-leaving');
+            setTimeout(hideIntroNow, reduceMotion ? 0 : 260);
+            unlockScroll();
+            if (!fromHistory) disarmHistory();
+        }
+        intro.addEventListener('click', function (e) {
+            var t = e.target.closest('[data-rsvp]');
+            if (!t || intro.classList.contains('is-leaving')) return;
+            var act = t.getAttribute('data-rsvp');
+            if (act === 'close') {
+                closeIntro(false);
+            } else if (act === 'open-form') {
+                openForm();
+            } else if (act === 'today') {
+                setItem(KEY_HIDE, String(Date.now() + HIDE_MS));
+                t.classList.add('is-checked');
+                setTimeout(function () { closeIntro(false); }, 220);
+            }
+        });
+        // 안내 팝업 위에서 손가락으로 끌어도 뒤 페이지가 움직이지 않게
+        intro.addEventListener('touchmove', function (e) {
+            var cardScrolls = card.scrollHeight > card.clientHeight + 1;
+            if (!cardScrolls || !card.contains(e.target)) e.preventDefault();
+        }, { passive: false });
+
+        /* ---------- 스크롤하면 안내 팝업 (스크롤이 멈춘 순간에 한 번) ---------- */
+        function canAutoOpen() {
+            if (introShown || isSuppressed()) return false;
+            if (!TEST_MODE && Date.now() > WEDDING_AT) return false;              // 예식이 지나면 띄우지 않음
+            if (document.getElementById('opening')) return false;                 // 오프닝 화면이 걷힌 뒤에만
+            if (document.querySelector('.lightbox.show, .custom-modal.show')) return false;
+            if (!layer.hidden) return false;
+            var ae = document.activeElement;
+            if (ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return false;  // 방명록 작성 중엔 방해하지 않음
+            return true;
+        }
+        var settleTimer = null;
+        function onScroll() {
+            if (introShown) return;
+            clearTimeout(settleTimer);
+            settleTimer = setTimeout(function () {
+                if (getScrollY() < Math.max(160, window.innerHeight * 0.3)) return;
+                if (canAutoOpen()) openIntro();
+            }, 350);
+        }
+        if (!isSuppressed() && (TEST_MODE || Date.now() <= WEDDING_AT)) {
+            window.addEventListener('scroll', onScroll, { passive: true });
+        }
+
+        /* ---------- 2) 입력 시트 ---------- */
+        function openForm() {
+            if (!layer.hidden) return;
+            var fromIntro = !intro.hidden;
+            lockScroll();
+            armHistory();
+            hideMsg();
+            layer.classList.remove('is-open', 'is-settled', 'is-closing');
+            layer.classList.toggle('from-intro', fromIntro);
+            layer.hidden = false;
+            sheet.scrollTop = 0;
+            void layer.offsetWidth;
+            layer.classList.add('is-open');                  // 시트가 아래에서 올라옴
+            if (fromIntro) {
+                intro.classList.remove('is-open');
+                intro.classList.add('is-leaving', 'keep-dim'); // 카드만 사라지고 어두운 배경은 유지
+            }
+            var settled = false;
+            function settle() {
+                if (settled) return;
+                settled = true;
+                sheet.removeEventListener('transitionend', onEnd);
+                layer.classList.add('is-settled');
+                layer.classList.remove('from-intro');
+                if (fromIntro) { hideIntroNow(); unlockScroll(); }
+                try { sheet.focus({ preventScroll: true }); } catch (e) {}
+            }
+            function onEnd(e) { if (e.target === sheet && e.propertyName === 'top') settle(); }
+            sheet.addEventListener('transitionend', onEnd);
+            setTimeout(settle, reduceMotion ? 0 : 650);
+            ensurePing().catch(function () {});              // 작성하는 동안 연결 확인을 미리 해둠
+        }
+        function closeForm(fromHistory) {
+            if (layer.hidden || layer.classList.contains('is-closing')) return;
+            var ae = document.activeElement;
+            if (ae && ae.blur && sheet.contains(ae)) ae.blur(); // 키보드 내리기
+            layer.classList.add('is-closing');
+            layer.classList.remove('is-open');
+            setTimeout(function () {
+                layer.hidden = true;
+                layer.classList.remove('is-closing', 'is-settled', 'from-intro');
+                if (sheet.classList.contains('is-done')) resetForm();
+            }, reduceMotion ? 0 : 340);
+            unlockScroll();
+            if (!fromHistory) disarmHistory();
+        }
+        layer.addEventListener('click', function (e) {
+            var t = e.target.closest('button');
+            if (!t || !layer.contains(t)) return;
+            if (t.getAttribute('data-rsvp') === 'close') { closeForm(false); return; }
+            var step = t.getAttribute('data-step');
+            if (step) { setCompanions(companions + parseInt(step, 10)); return; }
+            if (t === termsBtn) {
+                var open = terms.classList.toggle('is-open');
+                termsBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            }
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key !== 'Escape') return;
+            if (!layer.hidden) closeForm(false);
+            else if (!intro.hidden) closeIntro(false);
+        });
+
+        /* ---------- 입력 처리 ---------- */
+        function radioValue(name) {
+            var el = formEl.querySelector('input[name="' + name + '"]:checked');
+            return el ? el.value : '';
+        }
+        function setCompanions(n) {
+            companions = Math.max(0, Math.min(10, n));
+            compVal.firstChild.nodeValue = String(companions);
+            stepDown.disabled = companions <= 0;
+            stepUp.disabled = companions >= 10;
+        }
+        function syncAttend() {
+            var absent = radioValue('attend') === '불참';
+            cond.classList.toggle('is-collapsed', absent);
+            cond.setAttribute('aria-hidden', absent ? 'true' : 'false');
+            if ('inert' in cond) cond.inert = absent;
+            if (absent) clearError('meal');
+        }
+        function fieldEl(name) { return formEl.querySelector('[data-field="' + name + '"]'); }
+        function setError(name) { var f = fieldEl(name); if (f) f.classList.add('is-error'); }
+        function clearError(name) { var f = fieldEl(name); if (f) f.classList.remove('is-error'); }
+        function showMsg(text) { formMsg.textContent = text; formMsg.classList.add('show'); }
+        function hideMsg() { formMsg.classList.remove('show'); }
+
+        formEl.addEventListener('change', function (e) {
+            var t = e.target;
+            if (t.name === 'side' || t.name === 'attend' || t.name === 'meal') clearError(t.name);
+            if (t.name === 'attend') syncAttend();
+            if (t === agreeEl && agreeEl.checked) clearError('agree');
+            hideMsg();
+        });
+        guestEl.addEventListener('input', function () {
+            if (guestEl.value.trim()) clearError('guest');
+            hideMsg();
+        });
+        guestEl.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') { e.preventDefault(); guestEl.blur(); } // 키보드 '완료'로 실수 제출 방지
+        });
+        memoEl.addEventListener('input', function () { memoCount.textContent = memoEl.value.length; });
+
+        function collect() {
+            return {
+                side: radioValue('side'),
+                attend: radioValue('attend'),
+                meal: radioValue('meal'),
+                guest: guestEl.value.trim().slice(0, 20),
+                companions: companions,
+                memo: memoEl.value.trim().slice(0, 200),
+                agree: agreeEl.checked
+            };
+        }
+        function validate(v) {
+            var bad = [];
+            if (!v.side) bad.push('side');
+            if (!v.attend) bad.push('attend');
+            if (!v.guest) bad.push('guest');
+            if (v.attend !== '불참' && !v.meal) bad.push('meal');
+            if (!v.agree) bad.push('agree');
+            return bad;
+        }
+        function scrollToField(f) {
+            var head = sheet.querySelector('.rsvp-sheet-head');
+            var top = f.getBoundingClientRect().top - sheet.getBoundingClientRect().top + sheet.scrollTop
+                - (head ? head.offsetHeight : 0) - 16;
+            try { sheet.scrollTo({ top: Math.max(0, top), behavior: reduceMotion ? 'auto' : 'smooth' }); }
+            catch (err) { sheet.scrollTop = Math.max(0, top); }
+        }
+        formEl.addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (sending) return;
+            var v = collect();
+            var bad = validate(v);
+            ['side', 'attend', 'guest', 'meal', 'agree'].forEach(clearError);
+            if (bad.length) {
+                bad.forEach(setError);
+                scrollToField(fieldEl(bad[0]));
+                return;
+            }
+            send(v);
+        });
+
+        /* ---------- 전송 ---------- */
+        function fetchJson(url, body, timeoutMs) {
+            return new Promise(function (resolve, reject) {
+                var finished = false;
+                var timer = setTimeout(function () {
+                    if (!finished) { finished = true; reject(new Error('timeout')); }
+                }, timeoutMs);
+                var opts = body ? { method: 'POST', body: JSON.stringify(body) } : { method: 'GET' };
+                fetch(url, opts).then(function (res) { return res.json(); }).then(function (data) {
+                    if (finished) return;
+                    finished = true; clearTimeout(timer); resolve(data);
+                }, function (err) {
+                    if (finished) return;
+                    finished = true; clearTimeout(timer); reject(err);
+                });
+            });
+        }
+        var pingPromise = null;
+        function ensurePing() {
+            if (!RSVP_URL) return Promise.reject(new Error('no-url'));
+            if (!pingPromise) {
+                var url = RSVP_URL + (RSVP_URL.indexOf('?') < 0 ? '?' : '&') + 'type=rsvp_ping&t=' + Date.now();
+                pingPromise = fetchJson(url, null, 12000).then(function (r) {
+                    if (!r || r.ok !== true || r.type !== 'rsvp_ping') throw new Error('not-ready');
+                    return true;
+                });
+                pingPromise.catch(function () { pingPromise = null; });  // 실패하면 다음에 다시 확인
+            }
+            return pingPromise;
+        }
+        function setLoading(on) {
+            sending = on;
+            submitBtn.disabled = on;
+            submitBtn.classList.toggle('is-loading', on);
+            submitText.textContent = on ? '전달하는 중…' : '참석 여부 전달하기';
+        }
+        function send(v) {
+            hideMsg();
+            setLoading(true);
+            var attend = v.attend === '참석';
+            var payload = {
+                type: 'rsvp',
+                side: v.side,
+                attend: v.attend,
+                meal: attend ? v.meal : '-',
+                guest: v.guest,
+                companions: attend ? v.companions : 0,
+                memo: v.memo,
+                agree: true,
+                page: RSVP_PAGE
+            };
+            ensurePing().then(function () {
+                return fetchJson(RSVP_URL, payload, 20000);
+            }).then(function (r) {
+                if (!r || r.ok !== true || r.type !== 'rsvp') throw new Error('save-failed');
+                setItem(KEY_DONE, JSON.stringify({ at: Date.now(), side: v.side, attend: v.attend }));
+                showDone(v);
+            }).catch(function () {
+                showMsg('지금은 전달이 원활하지 않아요.\n잠시 후 다시 시도해 주세요.');
+            }).then(function () {
+                setLoading(false);
+            });
+        }
+        function showDone(v) {
+            var attend = v.attend === '참석';
+            document.getElementById('rsvpDoneMsg').innerHTML = attend
+                ? '귀한 걸음 해주셔서 감사합니다.<br>그날 반갑게 맞이하겠습니다.'
+                : '함께하지 못하셔도 보내주신 마음<br>감사히 간직하겠습니다.';
+            var chips = [v.side, attend ? '참석' : '불참'];
+            if (attend) { chips.push('총 ' + (v.companions + 1) + '명'); chips.push(v.meal); }
+            var box = document.getElementById('rsvpSummary');
+            box.innerHTML = '';
+            chips.forEach(function (c) {
+                var s = document.createElement('span');
+                s.textContent = c;
+                box.appendChild(s);
+            });
+            sheet.classList.add('is-done');
+            sheet.scrollTop = 0;
+        }
+        function resetForm() {
+            formEl.reset();
+            setCompanions(0);
+            memoCount.textContent = '0';
+            syncAttend();
+            terms.classList.remove('is-open');
+            termsBtn.setAttribute('aria-expanded', 'false');
+            ['side', 'attend', 'guest', 'meal', 'agree'].forEach(clearError);
+            hideMsg();
+            sheet.classList.remove('is-done');
+        }
+
+        setCompanions(0);
+        syncAttend();
+        // 나중에 본문 버튼 등에서 열고 싶을 때: onclick="openRsvp()"
+        window.openRsvp = function () { introShown = true; openForm(); };
+    })();
     </script>
 </body>
 </html>
