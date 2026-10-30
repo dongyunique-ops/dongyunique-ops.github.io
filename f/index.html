@@ -186,32 +186,55 @@ section {
     0%, 100% { opacity: 0.6; }
     50% { opacity: 1; }
 }
-/* 문구 주위에 자동으로 그려지는 하트 */
+/* 문구 주위에 자동으로 그려지는 하트
+   위쪽 가운데에서 양쪽으로 동시에 그려져 아래 끝에서 만나고 → 은은하게 차오른 뒤 두근두근 */
 .auto-heart-svg {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -52%);
-    width: 300px;
-    height: 275px;
-    max-width: 78vw;
+    width: min(360px, 96vw);
+    height: min(350px, 93.33vw); /* viewBox 360:350 비율 그대로 (구형 사파리 대비 높이 명시) */
+    transform: translate(-50%, -50%);
     z-index: -1;
     pointer-events: none;
     overflow: visible;
 }
-.auto-heart-path {
-    fill: none;
-    stroke: rgba(255,255,255,0.92);
-    stroke-width: 2.5;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    filter: drop-shadow(0 0 6px rgba(255,170,205,0.7));
-    stroke-dasharray: 720;
-    stroke-dashoffset: 720;
-    animation: drawHeart 1.6s ease-in-out 0.9s forwards;
+.oh-line { opacity: 0; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.auto-heart-svg.is-drawing .oh-line { opacity: 1; }
+.oh-halo-wide { stroke: rgba(255, 186, 210, 0.18); stroke-width: 11; }
+.oh-halo { stroke: rgba(255, 200, 220, 0.42); stroke-width: 5.5; }
+.oh-core { stroke: url(#ohCore); stroke-width: 2.4; }
+.oh-bloom { fill: url(#ohBloom); opacity: 0; transition: opacity 0.9s ease; }
+.auto-heart-svg.is-drawn .oh-bloom { opacity: 1; }
+.oh-tip { opacity: 0; }
+.oh-tip-glow2 { fill: rgba(255, 190, 214, 0.24); }
+.oh-tip-glow { fill: rgba(255, 222, 234, 0.6); }
+.oh-tip-core { fill: #fff; }
+.oh-beat { transform-box: fill-box; transform-origin: 50% 46%; }
+.auto-heart-svg.is-drawn .oh-beat { animation: ohBeat 1.7s ease-in-out 0.15s infinite; }
+@keyframes ohBeat {
+    0%, 44%, 100% { transform: scale(1); }
+    12% { transform: scale(1.045); }
+    24% { transform: scale(0.995); }
+    33% { transform: scale(1.022); }
 }
-@keyframes drawHeart {
-    to { stroke-dashoffset: 0; }
+/* 두 선이 만나는 순간 아래 끝에서 반짝 */
+.oh-flash { fill: url(#ohFlash); opacity: 0; transform-box: fill-box; transform-origin: center; }
+.auto-heart-svg.is-drawn .oh-flash { animation: ohFlash 0.8s ease-out forwards; }
+@keyframes ohFlash {
+    0% { opacity: 0; transform: scale(0.3); }
+    25% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(2.4); }
+}
+.oh-spark { fill: #fff; opacity: 0; transform-box: fill-box; transform-origin: center; }
+.auto-heart-svg.is-drawn .oh-spark { animation: ohTwinkle 2.4s ease-in-out infinite; }
+@keyframes ohTwinkle {
+    0%, 100% { opacity: 0; transform: scale(0.2) rotate(0deg); }
+    30% { opacity: 1; transform: scale(1) rotate(25deg); }
+    62% { opacity: 0; transform: scale(0.3) rotate(60deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .auto-heart-svg.is-drawn .oh-beat, .auto-heart-svg.is-drawn .oh-spark { animation: none; }
 }
 /* 음악 버튼 */
 .music-btn {
@@ -768,7 +791,7 @@ section {
     margin-bottom: 8px;
 }
 .msg-item-name { font-size: 14px; font-weight: 600; }
-.msg-item-date { font-size: 11px; color: #aaa; }
+.msg-item-date { display: none; } /* 방명록 작성 날짜는 화면에 표시하지 않음 */
 .msg-item-text { font-size: 14px; color: #444; line-height: 1.6; }
 /* Share */
 .share-buttons { display: flex; flex-direction: column; gap: 10px; padding: 0 24px 40px; }
@@ -1365,10 +1388,86 @@ body.rsvp-lock { overflow: hidden; }
             <p class="op-line1">우리 결혼합니다</p>
             <p class="op-names">동윤 &amp; 희은</p>
             <p class="op-date">2026. 12. 12</p>
-            <!-- 문구 주위에 자동으로 그려지는 하트 -->
-            <svg class="auto-heart-svg" viewBox="0 0 240 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path class="auto-heart-path" d="M120,200 C55,150 5,105 5,65 C5,30 30,5 60,5 C82,5 102,18 120,42 C138,18 158,5 180,5 C210,5 235,30 235,65 C235,105 185,150 120,200 Z"/>
+            <!-- 문구 주위에 자동으로 그려지는 하트 (위 가운데 → 양쪽 → 아래 끝에서 만남) -->
+            <svg class="auto-heart-svg" id="autoHeart" viewBox="-180 -175 360 350" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                    <linearGradient id="ohCore" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0" stop-color="#ffffff"/>
+                        <stop offset="1" stop-color="#ffe2ec"/>
+                    </linearGradient>
+                    <radialGradient id="ohFlash">
+                        <stop offset="0" stop-color="#ffffff" stop-opacity="0.95"/>
+                        <stop offset="0.4" stop-color="#ffe3ee" stop-opacity="0.55"/>
+                        <stop offset="1" stop-color="#ffd0e0" stop-opacity="0"/>
+                    </radialGradient>
+                    <radialGradient id="ohBloom" cx="0.5" cy="0.42" r="0.62">
+                        <stop offset="0" stop-color="#ffd6e4" stop-opacity="0.34"/>
+                        <stop offset="0.65" stop-color="#ffc4d8" stop-opacity="0.12"/>
+                        <stop offset="1" stop-color="#ffc4d8" stop-opacity="0"/>
+                    </radialGradient>
+                </defs>
+                <g class="oh-beat">
+                    <path class="oh-bloom" d="M0,-86 C-10,-124 -40,-142 -80,-142 C-126,-142 -160,-108 -160,-64 C-160,0 -70,92 0,150 C70,92 160,0 160,-64 C160,-108 126,-142 80,-142 C40,-142 10,-124 0,-86 Z"/>
+                    <path class="oh-line oh-halo-wide" d="M0,-86 C-10,-124 -40,-142 -80,-142 C-126,-142 -160,-108 -160,-64 C-160,0 -70,92 0,150"/>
+                    <path class="oh-line oh-halo-wide" d="M0,-86 C10,-124 40,-142 80,-142 C126,-142 160,-108 160,-64 C160,0 70,92 0,150"/>
+                    <path class="oh-line oh-halo" d="M0,-86 C-10,-124 -40,-142 -80,-142 C-126,-142 -160,-108 -160,-64 C-160,0 -70,92 0,150"/>
+                    <path class="oh-line oh-halo" d="M0,-86 C10,-124 40,-142 80,-142 C126,-142 160,-108 160,-64 C160,0 70,92 0,150"/>
+                    <path class="oh-line oh-core" d="M0,-86 C-10,-124 -40,-142 -80,-142 C-126,-142 -160,-108 -160,-64 C-160,0 -70,92 0,150"/>
+                    <path class="oh-line oh-core" d="M0,-86 C10,-124 40,-142 80,-142 C126,-142 160,-108 160,-64 C160,0 70,92 0,150"/>
+                </g>
+                <circle class="oh-flash" cx="0" cy="150" r="16"/>
+                <g class="oh-tip"><circle class="oh-tip-glow2" r="11"/><circle class="oh-tip-glow" r="5.5"/><circle class="oh-tip-core" r="2.3"/></g>
+                <g class="oh-tip"><circle class="oh-tip-glow2" r="11"/><circle class="oh-tip-glow" r="5.5"/><circle class="oh-tip-core" r="2.3"/></g>
+                <g class="oh-sparks">
+                    <g transform="translate(-118,-156) scale(1.0)"><path class="oh-spark" style="animation-delay:0.0s" d="M0,-7 C0.9,-1.6 1.6,-0.9 7,0 C1.6,0.9 0.9,1.6 0,7 C-0.9,1.6 -1.6,0.9 -7,0 C-1.6,-0.9 -0.9,-1.6 0,-7 Z"/></g>
+                    <g transform="translate(132,-150) scale(0.8)"><path class="oh-spark" style="animation-delay:0.55s" d="M0,-7 C0.9,-1.6 1.6,-0.9 7,0 C1.6,0.9 0.9,1.6 0,7 C-0.9,1.6 -1.6,0.9 -7,0 C-1.6,-0.9 -0.9,-1.6 0,-7 Z"/></g>
+                    <g transform="translate(178,-34) scale(0.65)"><path class="oh-spark" style="animation-delay:1.1s" d="M0,-7 C0.9,-1.6 1.6,-0.9 7,0 C1.6,0.9 0.9,1.6 0,7 C-0.9,1.6 -1.6,0.9 -7,0 C-1.6,-0.9 -0.9,-1.6 0,-7 Z"/></g>
+                    <g transform="translate(-176,-6) scale(0.8)"><path class="oh-spark" style="animation-delay:0.35s" d="M0,-7 C0.9,-1.6 1.6,-0.9 7,0 C1.6,0.9 0.9,1.6 0,7 C-0.9,1.6 -1.6,0.9 -7,0 C-1.6,-0.9 -0.9,-1.6 0,-7 Z"/></g>
+                    <g transform="translate(-104,108) scale(0.6)"><path class="oh-spark" style="animation-delay:0.9s" d="M0,-7 C0.9,-1.6 1.6,-0.9 7,0 C1.6,0.9 0.9,1.6 0,7 C-0.9,1.6 -1.6,0.9 -7,0 C-1.6,-0.9 -0.9,-1.6 0,-7 Z"/></g>
+                    <g transform="translate(110,102) scale(0.9)"><path class="oh-spark" style="animation-delay:0.2s" d="M0,-7 C0.9,-1.6 1.6,-0.9 7,0 C1.6,0.9 0.9,1.6 0,7 C-0.9,1.6 -1.6,0.9 -7,0 C-1.6,-0.9 -0.9,-1.6 0,-7 Z"/></g>
+                    <g transform="translate(0,-124) scale(0.55)"><path class="oh-spark" style="animation-delay:1.4s" d="M0,-7 C0.9,-1.6 1.6,-0.9 7,0 C1.6,0.9 0.9,1.6 0,7 C-0.9,1.6 -1.6,0.9 -7,0 C-1.6,-0.9 -0.9,-1.6 0,-7 Z"/></g>
+                </g>
             </svg>
+            <script>
+            // 하트 그리기: 두 줄이 위 가운데에서 출발해 빛나는 펜 끝과 함께 아래 끝에서 만남
+            (function () {
+                var svg = document.getElementById('autoHeart');
+                if (!svg || !svg.querySelectorAll) return;
+                var lines = svg.querySelectorAll('.oh-line');
+                var guides = svg.querySelectorAll('.oh-core');
+                var tips = svg.querySelectorAll('.oh-tip');
+                if (!guides.length || !guides[0].getTotalLength) { svg.setAttribute('class', svg.getAttribute('class') + ' is-drawing is-drawn'); return; }
+                var L = guides[0].getTotalLength(), i;
+                for (i = 0; i < lines.length; i++) {
+                    lines[i].style.strokeDasharray = L + ' ' + (L + 4);
+                    lines[i].style.strokeDashoffset = L;
+                }
+                function ease(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+                function render(t) {
+                    var len = L * ease(t);
+                    for (i = 0; i < lines.length; i++) lines[i].style.strokeDashoffset = L - len;
+                    for (i = 0; i < tips.length; i++) {
+                        var p = guides[i].getPointAtLength(len);
+                        tips[i].setAttribute('transform', 'translate(' + p.x.toFixed(2) + ',' + p.y.toFixed(2) + ')');
+                        tips[i].style.opacity = t <= 0 ? 0 : (t >= 0.94 ? Math.max(0, (1 - t) / 0.06) : 1);
+                    }
+                }
+                function addClass(c) { if ((' ' + svg.getAttribute('class') + ' ').indexOf(' ' + c + ' ') < 0) svg.setAttribute('class', svg.getAttribute('class') + ' ' + c); }
+                var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                if (reduce) { render(1); addClass('is-drawing'); addClass('is-drawn'); return; }
+                var DELAY = 700, DUR = 1400, t0 = null;
+                render(0);
+                function frame(ts) {
+                    if (t0 === null) t0 = ts;
+                    var t = Math.min(1, Math.max(0, (ts - t0 - DELAY) / DUR));
+                    if (t > 0) addClass('is-drawing');
+                    render(t);
+                    if (t < 1) requestAnimationFrame(frame);
+                    else addClass('is-drawn');
+                }
+                requestAnimationFrame(frame);
+            })();
+            </script>
         </div>
     </div>
 
@@ -2547,7 +2646,7 @@ body.rsvp-lock { overflow: hidden; }
        - 방명록과 같은 Apps Script(SCRIPT_URL)로 type:'rsvp' 전송 → 시트 '참석여부' 탭
        - 저장 전 ?type=rsvp_ping 으로 스크립트 새 버전이 배포됐는지 먼저 확인
          (배포 전이면 전송하지 않음 → 방명록에 섞이는 일 방지)
-       - '오늘 하루 보지 않기' = 24시간 / 제출을 마친 기기에서는 다시 안 뜸
+       - '오늘 하루 보지 않기' = 24시간 / 이미 회신한 하객도 다시 들어오면 팝업이 뜸
        - 미리보기: 주소 뒤에 ?rsvp=test 를 붙이면 위 조건을 무시하고 띄움
        ============================================================ */
     (function () {
@@ -2588,7 +2687,6 @@ body.rsvp-lock { overflow: hidden; }
         function setItem(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
         function isSuppressed() {
             if (TEST_MODE) return false;
-            if (getItem(KEY_DONE)) return true;
             var until = parseInt(getItem(KEY_HIDE) || '0', 10);
             return !!until && Date.now() < until;
         }
