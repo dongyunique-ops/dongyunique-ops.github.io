@@ -1063,6 +1063,24 @@ body.rsvp-lock { overflow: hidden; }
     transition: background 0.2s;
 }
 .rsvp-cta:hover, .rsvp-cta:active { background: #d18fa2; }
+.rsvp-bus {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-top: 22px;
+    padding: 13px 15px;
+    border-radius: 12px;
+    background: #fbf3f5;
+    text-align: left;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: #555;
+    word-break: keep-all;
+}
+.rsvp-bus svg { flex-shrink: 0; width: 18px; height: 18px; margin-top: 2px; color: #d18fa2; }
+.rsvp-bus strong { color: #bd7c86; font-weight: 600; }
+.rsvp-bus small { display: block; font-size: 12.5px; color: #999; }
+.rsvp-bus + .rsvp-cta { margin-top: 14px; }
 .rsvp-today {
     display: inline-flex;
     align-items: center;
@@ -1839,6 +1857,10 @@ body.rsvp-lock { overflow: hidden; }
                     <span>엘로라 인 가든<small>서울 송파구 충민로 52 가든파이브웍스&nbsp;1층</small></span>
                 </li>
             </ul>
+            <p class="rsvp-bus">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3.5" width="16" height="14" rx="2.5"/><path d="M4 11h16M8 17.5V20M16 17.5V20"/><circle cx="8" cy="14.3" r="0.6" fill="currentColor"/><circle cx="16" cy="14.3" r="0.6" fill="currentColor"/></svg>
+                <span><strong>오전 8시 30분</strong><br>고산우체국 앞에서 버스로 모시겠습니다.<small>장소: 지하철 2호선 고산역 2번 출구</small></span>
+            </p>
             <button type="button" class="rsvp-cta" data-rsvp="open-form">참석 여부 전달하기</button>
             <button type="button" class="rsvp-today" data-rsvp="today">
                 <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle class="ck-circle" cx="12" cy="12" r="9.5"/><path class="ck-mark" fill="none" d="M8 12.3l2.7 2.7 5.5-5.4"/></svg>
